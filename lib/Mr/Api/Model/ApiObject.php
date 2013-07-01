@@ -21,6 +21,7 @@ abstract class ApiObject
 	{
 		$this->_repo = $repository;
 		$this->setData($data);
+		$this->_isModified = false;
 	}
 
 	/**
