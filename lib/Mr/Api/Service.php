@@ -26,6 +26,21 @@ class Service
 	}
 
 	/**
+	* Returns a new object from given model and initial data. 
+	* It does not execute any persisten action.
+	*
+	* @param $model string
+	* @param $data object | array
+	* @return Mr\Api\Model\ApiObject
+	*/
+	public function create($model, $data = null)
+	{
+		$repo = $this->getRepository($model);
+
+		return $repo->create($data);
+	}
+
+	/**
 	* Returns an object by its given model and id. 
 	*
 	* @param $model string 

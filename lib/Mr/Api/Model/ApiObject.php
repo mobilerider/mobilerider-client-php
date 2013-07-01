@@ -19,10 +19,12 @@ abstract class ApiObject
 	*/
 	protected $_repo;
 
-	public function __construct($repository, $data = array())
+	public function __construct($repository, $data = null)
 	{
 		$this->_repo = $repository;
-		$this->setData($data);
+		if ($data) {
+			$this->setData($data);
+		}
 		$this->_isModified = false;
 	}
 
@@ -71,7 +73,7 @@ abstract class ApiObject
 		} else if (is_array($data)) {
 			$this->_data = array_merge($this->_data, $data);
 		} else {
-			throw new Exception("Invalid data format");
+			throw new \Exception("Invalid data format");
 		}
 	}
 
