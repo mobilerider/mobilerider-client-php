@@ -18,31 +18,39 @@ class Client extends AbstractClient implements ClientInterface
 		$this->_password = $password;
 	}
 
-	public function get($path, array $parameters = array(), array $headers = array(), $responseType = AbstractClient::DATA_TYPE_JSON)
+	protected function getUrl($path)
 	{
-		$url = sprintf('http://%s/%s', $this->_host, $path);
+		return sprintf('http://%s/%s', $this->_host, $path);
+	}
 
-		$request = new Request($url, $this->_username, $this->_password, $responseType);
+	protected function call($method, $path, $parameters, $headers, $responseType)
+	{
+		$request = new Request($this->getUrl($path), $method, $this->_username, $this->_password, $responseType);
 		$request->setParameters($parameters);
 		$request->setHeaders($headers);
 
 		$response = $request->send();
 		
 		return $response->getContent();
+	}
+
+	public function get($path, array $parameters = array(), array $headers = array(), $responseType = AbstractClient::DATA_TYPE_JSON)
+	{
+		return $this->call(AbstractClient::METHOD_GET, $path, $parameters, $headers, $responseType);
 	}	
 
 	public function post($path, array $parameters = array(), array $headers = array(), $responseType = AbstractClient::DATA_TYPE_JSON)
 	{
-		// Implement this
+		return $this->call(AbstractClient::METHOD_POST, $path, $parameters, $headers, $responseType);
 	}
 
 	public function put($path, array $parameters = array(), array $headers = array(), $responseType = AbstractClient::DATA_TYPE_JSON)
 	{
-		// Implement this
+		return $this->call(AbstractClient::METHOD_PUT, $path, $parameters, $headers, $responseType);
 	}
 
 	public function delete($path, array $parameters = array(), array $headers = array(), $responseType = AbstractClient::DATA_TYPE_JSON)
 	{
-		// Implement this
+		return $this->call(AbstractClient::METHOD_DELETE, $path, $parameters, $headers, $responseType);
 	}
 }

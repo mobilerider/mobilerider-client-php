@@ -2,6 +2,8 @@
 
 namespace Mr\Api\Http;
 
+use Mr\Api\AbstractClient;
+
 class Request
 {
 	protected $_httpRequest;
@@ -9,13 +11,36 @@ class Request
 	protected $_parameters = array();
 	protected $_headers = array();
 	protected $_responseType;
+    protected $_method;
 
-	public function __construct($url, $username, $password, $responseType = AbstractClient::DATA_TYPE_JSON)
+	public function __construct($url, $method, $username, $password, $responseType = AbstractClient::DATA_TYPE_JSON)
 	{
 		$this->_responseType = $responseType;
-		$this->_httpRequest = new \HTTP_Request2($url);
+        $this->_method = $method;
+
+		$this->_httpRequest = new \HTTP_Request2($url, $this->getTranslateMethod());
 		$this->_httpRequest->setAuth($username, $password, \HTTP_Request2::AUTH_DIGEST);
 	}
+
+    public function getTranslateMethod()
+    {
+        switch ($this->_method) {
+            case AbstractClient::METHOD_POST:
+                $method = \HTTP_Request2::METHOD_POST;
+                break;
+            case AbstractClient::METHOD_PUT:
+                $method = \HTTP_Request2::METHOD_PUT;
+                break;
+            case AbstractClient::METHOD_DELETE:
+                $method = \HTTP_Request2::METHOD_DELETE;
+                break;
+            default:
+                $method = \HTTP_Request2::METHOD_GET;
+                break;
+        }
+
+        return $method;
+    }
 
 	/**
      * <b>Magic method</b>. Returns value of specified field
