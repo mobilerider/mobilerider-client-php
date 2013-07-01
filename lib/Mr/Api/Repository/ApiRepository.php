@@ -3,8 +3,10 @@
 namespace Mr\Api\Repository;
 
 use Mr\Api\ClientInterface;
+use Mr\Api\AbstractClient;
 use Mr\Exception;
 use Mr\Api\Model;
+use Mr\Api\Model\ApiObject;
 
 abstract class ApiRepository
 {
@@ -113,14 +115,16 @@ abstract class ApiRepository
 	{
 		if ($object->isNew()) {
 			$method = AbstractClient::METHOD_POST;
-			$path = sprintf("%s/%s", self::API_URL_PREFIX, $this->getModel());
+			$path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
 		} else {
 			$method = AbstractClient::METHOD_PUT;
-			$path = sprintf("%s/%s/%d", self::API_URL_PREFIX, $this->getModel(), $object->getId());
+			$path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
 		}
 
 		$params = array('JSON' => $object->getData());
 
 		$this->_client->request($method, $path, $params);
+
+		$object->saved();
 	}
 }

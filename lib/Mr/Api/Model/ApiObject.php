@@ -30,11 +30,30 @@ abstract class ApiObject
 
 	/**
 	* Returns current model name, eg: Media
+	*
+	* @return string
 	*/
 	public function getModel()
 	{
 		preg_match("/([^\\\]+$)/", get_called_class(), $matches);
 		return $matches[0];
+	}
+
+	/**
+	* Returns field name of the string representing this object
+	*
+	* @return string
+	*/
+	public abstract function getStringField();
+
+	/**
+	* Returns field name of the primary key
+	*
+	* @return string
+	*/
+	public function getKeyField()
+	{
+		return 'ID';
 	}
 
 	/**
@@ -45,6 +64,38 @@ abstract class ApiObject
 	public function isModified()
 	{
 		return $this->_isModified;
+	}
+
+	/**
+	* Returns TRUE if the object is new
+	*
+	* @return boolean
+	*/
+	public function isNew()
+	{
+		return $this->getId() == null;
+	}
+
+	/**
+	* Returns id value
+	*
+	* @param $id mixed
+	*/
+	protected function setId($id = null)
+	{
+		$idField = $this->getKeyField();
+		$this->{$idField} = $id;
+	}
+
+	/**
+	* Returns id value
+	*
+	* @return mixed
+	*/
+	public function getId()
+	{
+		$idField = $this->getKeyField();
+		return $this->{$idField};
 	}
 
 	/**
@@ -131,5 +182,31 @@ abstract class ApiObject
         }
 
         $this->_isModified = $this->_isModified || $modified;
+    }
+
+    public function __toString()
+    {
+    	$strField = $this->getStringField();
+    	return $this->{$strField} ? $this->{$strField} : var_export($this->_data);
+    }
+
+    /**
+    * For internal use ONLY
+    *
+    */
+    public function saved()
+    {
+    	$this->_isModified = false;
+    }
+
+    /**
+    * For internal use ONLY
+    *
+    */
+    public function deleted()
+    {
+    	$this->setId();
+    	$this->_isModified = false;
+    	$this->_repo = null;
     }
 }

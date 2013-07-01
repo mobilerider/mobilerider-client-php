@@ -14,9 +14,9 @@ class Service
 	*/
 	protected $_client;
 
-	public function __construct($username, $password)
+	public function __construct($appId, $secret)
 	{
-		$this->_client = new Client(self::API_HOST, $username, $password);
+		$this->_client = new Client(self::API_HOST, $appId, $secret);
 	}
 
 	protected function getRepository($model)

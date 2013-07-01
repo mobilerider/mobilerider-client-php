@@ -28,7 +28,7 @@ abstract class AbstractClient implements ClientInterface
 			case self::METHOD_POST:
 			case self::METHOD_GET:
 			case self::METHOD_PUT:
-				return call_user_func_array('self::' . $method, $args);
+				return call_user_func_array(array($this, $method), $args);
 			default:
 				throw new Exception("Invalid method");
 		}
