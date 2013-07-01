@@ -98,7 +98,7 @@ class Request
         }
 
         if ($this->_method == AbstractClient::METHOD_GET) {
-            $this->_httpRequest->setQueryVariable($params);
+            $this->_httpRequest->getUrl()->setQueryVariables($params);
         } else {
             $this->_httpRequest->addPostParameter($params);
         }
