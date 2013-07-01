@@ -2,6 +2,8 @@
 
 namespace Mr\Api\Model;
 
+use Mr\Exception\InvalidRepositoryException;
+
 abstract class ApiObject
 {
 	/**
@@ -71,6 +73,18 @@ abstract class ApiObject
 		} else {
 			throw new Exception("Invalid data format");
 		}
+	}
+
+	/**
+	* Saves current object using owner repository
+	*/
+	public function save()
+	{
+		if (!$this->_repo) {
+			throw new InvalidRepositoryException();
+		}
+
+		$this->_repo->save($this);
 	}
 
 	/**
