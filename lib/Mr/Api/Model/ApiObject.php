@@ -4,7 +4,7 @@ namespace Mr\Api\Model;
 
 abstract class ApiObject
 {
-	protected $_data;
+	protected $_data = array();
 	protected $_isModified;
 	protected $_repo;
 
