@@ -3,36 +3,26 @@
 namespace Mr\Api\Http;
 
 use Mr\Api\AbstractClient;
-use Mr\Exception\JsonException;
+use Mr\Api\Util\CommonUtils;
 
 class Response
 {
 	protected $_httpResponse;
+	protected $_dataType;
 
-	public function __construct($httpResponse, $responseType = AbstractClient::DATA_TYPE_JSON)
+	public function __construct($httpResponse, $dataType = AbstractClient::DATA_TYPE_JSON)
 	{
-		$this->_responseType = $responseType;
+		$this->_dataType = $dataType;
 		$this->_httpResponse = $httpResponse;
-	}
-
-	protected function getJSON($content)
-	{
-		$data = json_decode($content);
-
-		if (JSON_ERROR_NONE != ($jsonError = json_last_error())) {
-			throw new JsonException($jsonError);
-		}
-
-	    return $data;
 	}
 
 	public function getContent()
 	{
 		$content = $this->_httpResponse->getBody();
 
-		switch ($this->_responseType) {
+		switch ($this->_dataType) {
 			case AbstractClient::DATA_TYPE_JSON:
-				return $this->getJSON($content);
+				return CommonUtils::decodeJson($content);
 			default:
 				return $content;
 		}

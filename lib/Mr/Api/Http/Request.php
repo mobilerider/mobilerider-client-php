@@ -3,6 +3,7 @@
 namespace Mr\Api\Http;
 
 use Mr\Api\AbstractClient;
+use Mr\Api\Util\CommonUtils;
 
 class Request
 {
@@ -10,12 +11,12 @@ class Request
 	protected $_httpResponse;
 	protected $_parameters = array();
 	protected $_headers = array();
-	protected $_responseType;
+	protected $_dataType;
     protected $_method;
 
-	public function __construct($url, $method, $username, $password, $responseType = AbstractClient::DATA_TYPE_JSON)
+	public function __construct($url, $method, $username, $password, $dataType = AbstractClient::DATA_TYPE_JSON)
 	{
-		$this->_responseType = $responseType;
+		$this->_dataType = $dataType;
         $this->_method = $method;
 
 		$this->_httpRequest = new \HTTP_Request2($url, $this->getTranslateMethod());
@@ -84,6 +85,24 @@ class Request
 	public function send()
 	{
 		$this->_httpRequest->setHeader($this->_headers);
+
+        $params = array();
+        foreach ($this->_parameters as $name => $value) {
+            switch ($this->_dataType) {
+                case AbstractClient::DATA_TYPE_JSON:
+                    $params[$name] = CommonUtils::encodeJson($value);
+                    break;
+                default:
+                    $params[$name] = $value;
+            }
+        }
+
+        if ($this->_method == AbstractClient::METHOD_GET) {
+            $this->_httpRequest->setQueryVariables($params);
+        } else {
+            $this->_httpRequest->addPostParameter($params);
+        }
+
 		$this->_httpResponse = $this->_httpRequest->send();
 
 		return new Response($this->_httpResponse);

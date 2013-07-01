@@ -4,7 +4,8 @@ namespace Mr\Api\Repository;
 
 use Mr\Api\ClientInterface;
 use Mr\Api\AbstractClient;
-use Mr\Exception;
+use Mr\Exception\ServerErrorException;
+use Mr\Exception\InvalidResponseException;
 use Mr\Api\Model;
 use Mr\Api\Model\ApiObject;
 
@@ -44,7 +45,11 @@ abstract class ApiRepository
 		$success = is_object($response) && $response->status == self::STATUS_OK;
 
 		if (!$success) {
-			throw new InvalidResponseException();
+			if (is_object($response) && $response->status) {
+				throw new ServerErrorException($response->status);
+			} else {
+				throw new InvalidResponseException();
+			}
 		}
 
 		return $success;
@@ -136,7 +141,12 @@ abstract class ApiRepository
 		}
 
 		$params = array('JSON' => $object->getData());
-		$data = $this->_client->request($method, $path, $params);
-		$object->saved($object->isNew() ? $data : null);
+		$response = $this->_client->request($method, $path, $params);
+
+		if ($object->isNew() && $this->validateResponse($response)) {
+			$object->saved($response->object);
+		} else {
+			$object->saved();
+		}
 	}
 }
