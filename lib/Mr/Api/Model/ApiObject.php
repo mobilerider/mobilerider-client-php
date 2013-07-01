@@ -88,6 +88,18 @@ abstract class ApiObject
 	}
 
 	/**
+	* Delete current object using owner repository
+	*/
+	public function delete()
+	{
+		if (!$this->_repo) {
+			throw new InvalidRepositoryException();
+		}
+
+		$this->_repo->delete($this);
+	}
+
+	/**
      * <b>Magic method</b>. Returns value of specified field
      *
      * @param string $name Field name
