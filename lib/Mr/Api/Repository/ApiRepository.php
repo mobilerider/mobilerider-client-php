@@ -3,6 +3,7 @@
 namespace Mr\Api\Repository;
 
 use Mr\Api\ClientInterface;
+use Mr\Exception;
 
 abstract class ApiRepository
 {
@@ -31,7 +32,13 @@ abstract class ApiRepository
 
 	protected function validateResponse($response)
 	{
-		return is_object($response) && $response->status == self::STATUS_OK;
+		$success = is_object($response) && $response->status == self::STATUS_OK;
+
+		if (!$success) {
+			throw new InvalidResponseException();
+		}
+
+		return $success;
 	}
 
 	public function create($data = null)
