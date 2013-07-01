@@ -25,6 +25,13 @@ class Service
 		return new $repoName($this->_client);
 	}
 
+	/**
+	* Returns an object by its given model and id. 
+	*
+	* @param $model string 
+	* @param $id mixed 
+	* @return Mr\Api\Model\ApiObject
+	*/
 	public function get($model, $id)
 	{
 		$repo = $this->getRepository($model);
@@ -32,6 +39,12 @@ class Service
 		return $repo->get($id);
 	}
 
+	/**
+	* Returns a all objects from given model.
+	*
+	* @param $model string 
+	* @return array
+	*/
 	public function getAll($model)
 	{
 		$repo = $this->getRepository($model);

@@ -4,6 +4,7 @@ namespace Mr\Api\Repository;
 
 use Mr\Api\ClientInterface;
 use Mr\Exception;
+use Mr\Api\Model;
 
 abstract class ApiRepository
 {
@@ -30,6 +31,12 @@ abstract class ApiRepository
 		return str_replace('Repository', '', $matches[0]);
 	}
 
+	/**
+	* Returns TRUE if given response is valid or throw an exception otherwise
+	*
+	* @param $response mixed
+	* @return boolean
+	*/
 	protected function validateResponse($response)
 	{
 		$success = is_object($response) && $response->status == self::STATUS_OK;
@@ -41,12 +48,25 @@ abstract class ApiRepository
 		return $success;
 	}
 
+	/**
+	* Returns a new model object. 
+	* It does not execute any persisten action
+	*
+	* @param $data object | array
+	* @return Mr\Api\Model\ApiObject
+	*/
 	public function create($data = null)
 	{
 		$modelClass = self::MODEL_NAMESPACE . $this->getModel();
 		return new $modelClass($this, $data);
 	}
 
+	/**
+	* Returns an object by its given id. 
+	*
+	* @param $id mixed 
+	* @return Mr\Api\Model\ApiObject
+	*/
 	public function get($id)
 	{
 		if (!$id || !is_numeric($id))
@@ -63,6 +83,11 @@ abstract class ApiRepository
 		return null;
 	}
 
+	/**
+	* Returns a all objects from this model. 
+	*
+	* @return array
+	*/
 	public function getAll()
 	{
 		$path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
@@ -79,6 +104,11 @@ abstract class ApiRepository
 		return $results;
 	}
 
+	/**
+	* Saves given model object.
+	*
+	* @param $object Mr\Api\Model\ApiObject
+	*/
 	public function save(ApiObject $object)
 	{
 		if ($object->isNew()) {
