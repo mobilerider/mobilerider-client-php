@@ -122,9 +122,7 @@ abstract class ApiRepository
 		}
 
 		$params = array('JSON' => $object->getData());
-
-		$this->_client->request($method, $path, $params);
-
-		$object->saved();
+		$data = $this->_client->request($method, $path, $params);
+		$object->saved($object->isNew() ? $data : null);
 	}
 }

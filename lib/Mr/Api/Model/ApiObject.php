@@ -123,6 +123,7 @@ abstract class ApiObject
 			}
 		} else if (is_array($data)) {
 			$this->_data = array_merge($this->_data, $data);
+			$this->_isModified = true;
 		} else {
 			throw new \Exception("Invalid data format");
 		}
@@ -194,8 +195,11 @@ abstract class ApiObject
     * For internal use ONLY
     *
     */
-    public function saved()
+    public function saved($data = null)
     {
+    	if ($data) {
+    		$this->setData($data);
+    	}
     	$this->_isModified = false;
     }
 
