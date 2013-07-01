@@ -4,8 +4,17 @@ namespace Mr\Api\Model;
 
 abstract class ApiObject
 {
+	/**
+	* var array
+	*/
 	protected $_data = array();
+	/**
+	* var boolean
+	*/
 	protected $_isModified;
+	/**
+	* var Mr\Api\Repository\ApiRepository
+	*/
 	protected $_repo;
 
 	public function __construct($repository, $data = array())
@@ -23,16 +32,33 @@ abstract class ApiObject
 		return $matches[0];
 	}
 
+	/**
+	* Returns TRUE if the objects has been modified after its creation
+	*
+	* @return boolean
+	*/
 	public function isModified()
 	{
 		return $this->_isModified;
 	}
 
+	/**
+	* Returns raw field values
+	*
+	* @return array
+	*/
 	public function getData()
 	{
 		return $this->_data;
 	}
 
+	/**
+	* Sets given data as part of this object field values.
+	* Data parameter needs to be an object or an array, otherwise 
+	* an exception is thrown.
+	*
+	* @param $data mixed
+	*/
 	public function setData($data)
 	{
 		if (is_object($data)) {
