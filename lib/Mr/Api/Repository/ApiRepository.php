@@ -46,6 +46,7 @@ abstract class ApiRepository
 			throw new Exception("Invalid Id");
 
 		$path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $id);
+		
 		$response = $this->_client->get($path);
 
 		if ($this->validateResponse($response)) {
@@ -57,7 +58,18 @@ abstract class ApiRepository
 
 	public function getAll()
 	{
-		return $this->client->get();
+		$path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
+		
+		$response = $this->_client->get($path);
+		$results = array();
+
+		if ($this->validateResponse($response)) {
+			foreach ($response->objects as $object) {
+				$results[] = $this->create($object);
+			}
+		}
+
+		return $results;
 	}
 
 	public function save(ApiObject $object)

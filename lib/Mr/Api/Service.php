@@ -19,19 +19,23 @@ class Service
 		$this->_client = new Client(self::API_HOST, $username, $password);
 	}
 
-	public function get($model, $id)
+	protected function getRepository($model)
 	{
 		$repoName = self::REPO_NAMESPACE . $model . 'Repository';
-		$repo = new $repoName($this->_client);
+		return new $repoName($this->_client);
+	}
+
+	public function get($model, $id)
+	{
+		$repo = $this->getRepository($model);
 
 		return $repo->get($id);
 	}
 
 	public function getAll($model)
 	{
-		$repoName = $model . 'Repository';
-		$repo = $repoName($this->_client);
+		$repo = $this->getRepository($model);
 
-		return $repo->get($id);
+		return $repo->getAll();
 	}
 }
