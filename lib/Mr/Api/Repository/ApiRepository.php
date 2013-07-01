@@ -107,6 +107,20 @@ abstract class ApiRepository
 	}
 
 	/**
+	* Deletes given model object.
+	*
+	* @param $object Mr\Api\Model\ApiObject
+	*/
+	public function delete(ApiObject $object)
+	{
+		$path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
+
+		$this->_client->delete($path);
+
+		$object->deleted();
+	}
+
+	/**
 	* Saves given model object.
 	*
 	* @param $object Mr\Api\Model\ApiObject
