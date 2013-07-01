@@ -1,6 +1,8 @@
 <?php
 
-class InvalidRepositoryException
+namespace Mr\Exception;
+
+class InvalidRepositoryException extends MrException
 {
 	public function __construct()
 	{
