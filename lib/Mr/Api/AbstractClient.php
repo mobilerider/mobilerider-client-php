@@ -2,6 +2,29 @@
 
 namespace Mr\Api;
 
+/** 
+ * AbstractClient Class file
+ *
+ * PHP Version 5.3
+ *
+ * @category Class
+ * @package  Mr\Api
+ * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
+
+/**
+ * AbstractClient Class
+ *
+ * Application class
+ *
+ * @category Class
+ * @package  Mr\Api
+ * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
 abstract class AbstractClient implements ClientInterface
 {
     const METHOD_GET = 'get';

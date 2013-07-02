@@ -5,6 +5,29 @@ namespace Mr\Api\Http;
 use Mr\Api\AbstractClient;
 use Mr\Api\Util\CommonUtils;
 
+/** 
+ * Request Class file
+ *
+ * PHP Version 5.3
+ *
+ * @category Class
+ * @package  Mr\Api\Http
+ * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
+
+/**
+ * Request Class
+ *
+ * Application class
+ *
+ * @category Class
+ * @package  Mr\Api\Http
+ * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
 class Request
 {
     protected $_httpRequest;

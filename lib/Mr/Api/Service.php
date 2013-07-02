@@ -4,6 +4,29 @@ namespace Mr\Api;
 
 use Mr\Api\Http\Client;
 
+/** 
+ * Service Class file
+ *
+ * PHP Version 5.3
+ *
+ * @category Class
+ * @package  Mr\Api
+ * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
+
+/**
+ * Service Class
+ *
+ * Application class
+ *
+ * @category Class
+ * @package  Mr\Api
+ * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
 class Service
 {
     const API_HOST = 'api.devmobilerider.com';
