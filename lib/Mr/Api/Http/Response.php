@@ -48,12 +48,12 @@ class Response
 
     public function isSuccessful()
     {
-        $this->getStatus == self::STATUS_OK;
+        return $this->getStatus() == self::STATUS_OK;
     }
 
     public function getStatus()
     {
-        $this->_httpResponse->getStatus();
+        return $this->_httpResponse->getStatus();
     }
 
     public function getContent()
