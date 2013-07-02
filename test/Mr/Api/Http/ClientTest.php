@@ -34,8 +34,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $response = $this->_client->getResponse();
 
 	    // Tests request and response are objects
-	    \PHPUnit_Framework_Assert::assertInternalType(\PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $request);
-	    \PHPUnit_Framework_Assert::assertInternalType(\PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $response);
+	    \PHPUnit_Framework_Assert::assertInstanceOf(self::CLIENT_NAMESPACE . 'Request', $request);
+	    \PHPUnit_Framework_Assert::assertInstanceOf(self::CLIENT_NAMESPACE . 'Response', $response);
 	}
 
 	public function testGetRequest()
@@ -48,10 +48,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $this->_client->addResponse();
 	    // Send request
 	    $this->_client->get($path, $parameters, $headers);
+		// Gets request object
+	    $request = $this->_client->getRequest();
+	    \PHPUnit_Framework_Assert::assertEquals(AbstractClient::METHOD_GET, $request->getMethod());
 		// Gets response object
 	    $response = $this->_client->getResponse();
-
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 	}
 
 	public function testPostRequest()
@@ -64,10 +66,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $this->_client->addResponse();
 	    // Send request
 	    $this->_client->post($path, $parameters, $headers);
+		// Gets request object
+	    $request = $this->_client->getRequest();
+	    \PHPUnit_Framework_Assert::assertEquals(AbstractClient::METHOD_POST, $request->getMethod());
 		// Gets response object
 	    $response = $this->_client->getResponse();
-
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 	}
 
 	public function testPutRequest()
@@ -80,10 +84,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $this->_client->addResponse();
 	    // Send request
 	    $this->_client->put($path, $parameters, $headers);
+		// Gets request object
+	    $request = $this->_client->getRequest();
+	    \PHPUnit_Framework_Assert::assertEquals(AbstractClient::METHOD_PUT, $request->getMethod());
 		// Gets response object
 	    $response = $this->_client->getResponse();
-
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 	}
 
 	public function testDeleteRequest()
@@ -96,10 +102,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $this->_client->addResponse();
 	    // Send request
 	    $this->_client->delete($path, $parameters, $headers);
+	    // Gets request object
+	    $request = $this->_client->getRequest();
+	    \PHPUnit_Framework_Assert::assertEquals(AbstractClient::METHOD_DELETE, $request->getMethod());
 		// Gets response object
 	    $response = $this->_client->getResponse();
-
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 	}
 
 	public function testGenericRequest()
@@ -117,7 +125,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $request = $this->_client->getRequest();
 	    \PHPUnit_Framework_Assert::assertEquals($method, $request->getMethod());
 	    $response = $this->_client->getResponse();
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 
 	    // Send POST request
 	    $method = AbstractClient::METHOD_POST;
@@ -125,7 +133,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $request = $this->_client->getRequest();
 	    \PHPUnit_Framework_Assert::assertEquals($method, $request->getMethod());
 	    $response = $this->_client->getResponse();
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 
 	    // Send PUT request
 	    $method = AbstractClient::METHOD_PUT;
@@ -133,7 +141,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $request = $this->_client->getRequest();
 	    \PHPUnit_Framework_Assert::assertEquals($method, $request->getMethod());
 	    $response = $this->_client->getResponse();
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 
 	    // Send DELETE request
 	    $method = AbstractClient::METHOD_DELETE;
@@ -141,7 +149,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    $request = $this->_client->getRequest();
 	    \PHPUnit_Framework_Assert::assertEquals($method, $request->getMethod());
 	    $response = $this->_client->getResponse();
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 	}
 
 	public function testJsonDataResponse()
@@ -150,15 +158,27 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$headers = array('h1' => 'a', 'h2' => 'b');
         $parameters = array('p1' => 'c', 'p2' => 'd');
         $method = AbstractClient::METHOD_GET;
-        $responseContent = json_encode(array('status' => 'ok', 'data' => 123, 'message' => 'This is a test'));
+        $responseData = array('status' => 'ok', 'data' => 123, 'message' => 'This is a test');
+        $responseContent = json_encode($responseData);
 
 		// Adds mock response with content
 	    $this->_client->addResponse(Response::STATUS_OK, '', $responseContent);
 	    // Send request
-	    $this->_client->get($path, $parameters, $headers);
-		// Gets response object
+	    $data = $this->_client->get($path, $parameters, $headers);
+	    // Gets response object
 	    $response = $this->_client->getResponse();
 
-	    \PHPUnit_Framework_Assert::assertEquals(Response::STATUS_OK, $response->getStatus());
+	    // Content is being returned correctly
+	    \PHPUnit_Framework_Assert::assertJson($response->getRawContent());
+	    \PHPUnit_Framework_Assert::assertJsonStringEqualsJsonString($responseContent, $response->getRawContent());
+	    // Content is being parsed correctly (json)
+	    \PHPUnit_Framework_Assert::assertInternalType(\PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $data);
+	    // Check data parsed
+	    foreach ($responseData as $key => $value) {
+	    	\PHPUnit_Framework_Assert::assertObjectHasAttribute($key, $data);	   
+	    	\PHPUnit_Framework_Assert::assertEquals($value, $data->{$key}); 
+	    }
+		
+	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
 	}
 }
