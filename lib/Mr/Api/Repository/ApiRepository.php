@@ -141,11 +141,15 @@ abstract class ApiRepository
     */
     public function delete(ApiObject $object)
     {
+        $object->beforeDelete();
+
         $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
 
         $this->_client->delete($path);
 
         $object->deleted();
+
+        $object->afterDelete();
     }
 
     /**
@@ -155,6 +159,12 @@ abstract class ApiRepository
     */
     public function save(ApiObject $object)
     {
+        if (ApiObject::STATUS_VALID != ($msg = $object->validate())) {
+            throw new InvalidDataOperationException($msg, 'Save object');
+        }
+
+        $object->beforeSave();
+
         if ($object->isNew()) {
             $method = AbstractClient::METHOD_POST;
             $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
@@ -171,5 +181,7 @@ abstract class ApiRepository
         } else {
             $object->saved();
         }
+
+        $object->afterSave();
     }
 }

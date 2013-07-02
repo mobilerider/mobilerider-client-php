@@ -29,6 +29,8 @@ use Mr\Exception\InvalidRepositoryException;
  */
 abstract class ApiObject
 {
+    const STATUS_VALID = 'valid';
+
     /**
     * var array
     */
@@ -152,22 +154,47 @@ abstract class ApiObject
         }
     }
 
+    public function validate()
+    {
+        return self::STATUS_VALID;
+    }
+
+    public function beforeSave()
+    {
+        // To implement in child classes
+    }
+
+    public function afterSave()
+    {
+        // To implement in child classes
+    }
+
+    public function beforeDelete()
+    {
+        // To implement in child classes
+    }
+
+    public function afterDelete()
+    {
+        // To implement in child classes
+    }
+
     /**
     * Saves current object using owner repository
     */
-    public function save()
+    public final function save()
     {
         if (!$this->_repo) {
             throw new InvalidRepositoryException();
         }
-
+        
         $this->_repo->save($this);
     }
 
     /**
     * Delete current object using owner repository
     */
-    public function delete()
+    public final function delete()
     {
         if (!$this->_repo) {
             throw new InvalidRepositoryException();
@@ -220,7 +247,7 @@ abstract class ApiObject
     * For internal use ONLY
     *
     */
-    public function saved($data = null)
+    public final function saved($data = null)
     {
         if ($data) {
             $this->setData($data);
@@ -232,7 +259,7 @@ abstract class ApiObject
     * For internal use ONLY
     *
     */
-    public function deleted()
+    public final function deleted()
     {
         $this->setId();
         $this->_isModified = false;
