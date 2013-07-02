@@ -1,0 +1,30 @@
+{
+    "name": "mobilerider/mobilerider-php-sdk",
+    "description": "MobileRider API Client SDK",
+    "homepage": "https://github.com/mobilerider/mobilerider-php-sdk",
+    "keywords": ["mobilerider", "client", "api"],
+    "version": "1.0",
+    "type": "library",
+    "authors": [
+        {
+            "name": "MobileRider Team",
+            "homepage": "http://mobilerider.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "Mr\\": "lib/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "pear",
+            "url": "http://pear.php.net",
+            "vendor-alias": "pear"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "pear/HTTP_Request2": ">=2.1.0"
+    }
+}
