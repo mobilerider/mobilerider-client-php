@@ -6,5 +6,5 @@ use Mr\Api\Model\Channel;
 
 class ChannelRepository extends ApiRepository
 {
-	
+    
 }

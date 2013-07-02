@@ -6,154 +6,154 @@ use Mr\Exception\InvalidRepositoryException;
 
 abstract class ApiObject
 {
-	/**
-	* var array
-	*/
-	protected $_data = array();
-	/**
-	* var boolean
-	*/
-	protected $_isModified;
-	/**
-	* var Mr\Api\Repository\ApiRepository
-	*/
-	protected $_repo;
+    /**
+    * var array
+    */
+    protected $_data = array();
+    /**
+    * var boolean
+    */
+    protected $_isModified;
+    /**
+    * var Mr\Api\Repository\ApiRepository
+    */
+    protected $_repo;
 
-	public function __construct($repository, $data = null)
-	{
-		$this->_repo = $repository;
-		if ($data) {
-			$this->setData($data);
-		}
-		$this->_isModified = false;
-	}
+    public function __construct($repository, $data = null)
+    {
+        $this->_repo = $repository;
+        if ($data) {
+            $this->setData($data);
+        }
+        $this->_isModified = false;
+    }
 
-	/**
-	* Returns current model name, eg: Media
-	*
-	* @return string
-	*/
-	public function getModel()
-	{
-		preg_match("/([^\\\]+$)/", get_called_class(), $matches);
-		return $matches[0];
-	}
+    /**
+    * Returns current model name, eg: Media
+    *
+    * @return string
+    */
+    public function getModel()
+    {
+        preg_match("/([^\\\]+$)/", get_called_class(), $matches);
+        return $matches[0];
+    }
 
-	/**
-	* Returns field name of the string representing this object
-	*
-	* @return string
-	*/
-	public abstract function getStringField();
+    /**
+    * Returns field name of the string representing this object
+    *
+    * @return string
+    */
+    public abstract function getStringField();
 
-	/**
-	* Returns field name of the primary key
-	*
-	* @return string
-	*/
-	public function getKeyField()
-	{
-		return 'ID';
-	}
+    /**
+    * Returns field name of the primary key
+    *
+    * @return string
+    */
+    public function getKeyField()
+    {
+        return 'ID';
+    }
 
-	/**
-	* Returns TRUE if the objects has been modified after its creation
-	*
-	* @return boolean
-	*/
-	public function isModified()
-	{
-		return $this->_isModified;
-	}
+    /**
+    * Returns TRUE if the objects has been modified after its creation
+    *
+    * @return boolean
+    */
+    public function isModified()
+    {
+        return $this->_isModified;
+    }
 
-	/**
-	* Returns TRUE if the object is new
-	*
-	* @return boolean
-	*/
-	public function isNew()
-	{
-		return $this->getId() == null;
-	}
+    /**
+    * Returns TRUE if the object is new
+    *
+    * @return boolean
+    */
+    public function isNew()
+    {
+        return $this->getId() == null;
+    }
 
-	/**
-	* Returns id value
-	*
-	* @param $id mixed
-	*/
-	protected function setId($id = null)
-	{
-		$idField = $this->getKeyField();
-		$this->{$idField} = $id;
-	}
+    /**
+    * Returns id value
+    *
+    * @param $id mixed
+    */
+    protected function setId($id = null)
+    {
+        $idField = $this->getKeyField();
+        $this->{$idField} = $id;
+    }
 
-	/**
-	* Returns id value
-	*
-	* @return mixed
-	*/
-	public function getId()
-	{
-		$idField = $this->getKeyField();
-		return $this->{$idField};
-	}
+    /**
+    * Returns id value
+    *
+    * @return mixed
+    */
+    public function getId()
+    {
+        $idField = $this->getKeyField();
+        return $this->{$idField};
+    }
 
-	/**
-	* Returns raw field values
-	*
-	* @return array
-	*/
-	public function getData()
-	{
-		return $this->_data;
-	}
+    /**
+    * Returns raw field values
+    *
+    * @return array
+    */
+    public function getData()
+    {
+        return $this->_data;
+    }
 
-	/**
-	* Sets given data as part of this object field values.
-	* Data parameter needs to be an object or an array, otherwise 
-	* an exception is thrown.
-	*
-	* @param $data mixed
-	*/
-	public function setData($data)
-	{
-		if (is_object($data)) {
-			foreach (get_object_vars($data) as $name => $value) {
-				$this->{$name} = $value;
-			}
-		} else if (is_array($data)) {
-			$this->_data = array_merge($this->_data, $data);
-			$this->_isModified = true;
-		} else {
-			throw new \Exception("Invalid data format");
-		}
-	}
+    /**
+    * Sets given data as part of this object field values.
+    * Data parameter needs to be an object or an array, otherwise 
+    * an exception is thrown.
+    *
+    * @param $data mixed
+    */
+    public function setData($data)
+    {
+        if (is_object($data)) {
+            foreach (get_object_vars($data) as $name => $value) {
+                $this->{$name} = $value;
+            }
+        } else if (is_array($data)) {
+            $this->_data = array_merge($this->_data, $data);
+            $this->_isModified = true;
+        } else {
+            throw new \Exception("Invalid data format");
+        }
+    }
 
-	/**
-	* Saves current object using owner repository
-	*/
-	public function save()
-	{
-		if (!$this->_repo) {
-			throw new InvalidRepositoryException();
-		}
+    /**
+    * Saves current object using owner repository
+    */
+    public function save()
+    {
+        if (!$this->_repo) {
+            throw new InvalidRepositoryException();
+        }
 
-		$this->_repo->save($this);
-	}
+        $this->_repo->save($this);
+    }
 
-	/**
-	* Delete current object using owner repository
-	*/
-	public function delete()
-	{
-		if (!$this->_repo) {
-			throw new InvalidRepositoryException();
-		}
+    /**
+    * Delete current object using owner repository
+    */
+    public function delete()
+    {
+        if (!$this->_repo) {
+            throw new InvalidRepositoryException();
+        }
 
-		$this->_repo->delete($this);
-	}
+        $this->_repo->delete($this);
+    }
 
-	/**
+    /**
      * <b>Magic method</b>. Returns value of specified field
      *
      * @param string $name Field name
@@ -163,7 +163,7 @@ abstract class ApiObject
 
     public function __get($name)
     {
-    	$name = strtolower($name);
+        $name = strtolower($name);
         return array_key_exists($name, $this->_data) ? $this->_data[$name] : null;
     }
 
@@ -177,11 +177,11 @@ abstract class ApiObject
      */
     public function __set($name, $value)
     {
-    	$name = strtolower($name);
+        $name = strtolower($name);
         $oldValue = $this->{$name};
         
         if ($modified = $oldValue !== $value) {
-        	$this->_data[$name] = $value;
+            $this->_data[$name] = $value;
         }
 
         $this->_isModified = $this->_isModified || $modified;
@@ -189,8 +189,8 @@ abstract class ApiObject
 
     public function __toString()
     {
-    	$strField = $this->getStringField();
-    	return $this->{$strField} ? $this->{$strField} : var_export($this->_data);
+        $strField = $this->getStringField();
+        return $this->{$strField} ? $this->{$strField} : var_export($this->_data);
     }
 
     /**
@@ -199,10 +199,10 @@ abstract class ApiObject
     */
     public function saved($data = null)
     {
-    	if ($data) {
-    		$this->setData($data);
-    	}
-    	$this->_isModified = false;
+        if ($data) {
+            $this->setData($data);
+        }
+        $this->_isModified = false;
     }
 
     /**
@@ -211,8 +211,8 @@ abstract class ApiObject
     */
     public function deleted()
     {
-    	$this->setId();
-    	$this->_isModified = false;
-    	$this->_repo = null;
+        $this->setId();
+        $this->_isModified = false;
+        $this->_repo = null;
     }
 }

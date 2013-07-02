@@ -7,21 +7,21 @@ use Mr\Api\Util\CommonUtils;
 
 class Request
 {
-	protected $_httpRequest;
-	protected $_httpResponse;
-	protected $_parameters = array();
-	protected $_headers = array();
-	protected $_dataType;
+    protected $_httpRequest;
+    protected $_httpResponse;
+    protected $_parameters = array();
+    protected $_headers = array();
+    protected $_dataType;
     protected $_method;
 
-	public function __construct($url, $method, $username, $password, $dataType = AbstractClient::DATA_TYPE_JSON)
-	{
-		$this->_dataType = $dataType;
+    public function __construct($url, $method, $username, $password, $dataType = AbstractClient::DATA_TYPE_JSON)
+    {
+        $this->_dataType = $dataType;
         $this->_method = $method;
 
-		$this->_httpRequest = new \HTTP_Request2($url, $this->getTranslateMethod());
-		$this->_httpRequest->setAuth($username, $password, \HTTP_Request2::AUTH_DIGEST);
-	}
+        $this->_httpRequest = new \HTTP_Request2($url, $this->getTranslateMethod());
+        $this->_httpRequest->setAuth($username, $password, \HTTP_Request2::AUTH_DIGEST);
+    }
 
     public function getTranslateMethod()
     {
@@ -43,7 +43,7 @@ class Request
         return $method;
     }
 
-	/**
+    /**
      * <b>Magic method</b>. Returns value of specified field
      *
      * @param string $name Parameter name
@@ -69,22 +69,22 @@ class Request
 
     public function setParameters(array $parameters)
     {
-    	$this->_parameters = array_merge($this->_parameters, $parameters);
+        $this->_parameters = array_merge($this->_parameters, $parameters);
     }
 
     public function setHeaders(array $headers)
     {
-    	$this->_headers = array_merge($this->_headers, $headers);
+        $this->_headers = array_merge($this->_headers, $headers);
     }
 
-	public function addHeader($name, $value)
-	{
-		$this->_headers[$name] = $value;
-	}
+    public function addHeader($name, $value)
+    {
+        $this->_headers[$name] = $value;
+    }
 
-	public function send()
-	{
-		$this->_httpRequest->setHeader($this->_headers);
+    public function send()
+    {
+        $this->_httpRequest->setHeader($this->_headers);
 
         $params = array();
         foreach ($this->_parameters as $name => $value) {
@@ -103,8 +103,8 @@ class Request
             $this->_httpRequest->addPostParameter($params);
         }
 
-		$this->_httpResponse = $this->_httpRequest->send();
+        $this->_httpResponse = $this->_httpRequest->send();
 
-		return new Response($this->_httpResponse);
-	}
+        return new Response($this->_httpResponse);
+    }
 }

@@ -6,5 +6,5 @@ use Mr\Api\Model\Media;
 
 class MediaRepository extends ApiRepository
 {
-	
+    
 }
