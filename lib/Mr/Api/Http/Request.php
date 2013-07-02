@@ -48,6 +48,16 @@ class Request
         $this->_httpRequest->setAuth($username, $password, \HTTP_Request2::AUTH_DIGEST);
     }
 
+    /**
+    * Returns request method
+    *
+    * @return string
+    */
+    public function getMethod()
+    {
+        return $this->_method;
+    }
+
     public function getTranslateMethod()
     {
         switch ($this->_method) {
