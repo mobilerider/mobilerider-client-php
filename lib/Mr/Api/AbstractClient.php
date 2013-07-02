@@ -2,6 +2,8 @@
 
 namespace Mr\Api;
 
+use Mr\Exception\MrException;
+
 /** 
  * AbstractClient Class file
  *
@@ -99,11 +101,11 @@ abstract class AbstractClient implements ClientInterface
         switch ($method) {
             case self::METHOD_GET:
             case self::METHOD_POST:
-            case self::METHOD_GET:
             case self::METHOD_PUT:
+            case self::METHOD_DELETE:
                 return call_user_func_array(array($this, $method), $args);
             default:
-                throw new Exception("Invalid method");
+                throw new MrException("Invalid request method");
         }
     }
 }
