@@ -50,6 +50,14 @@ class Client extends AbstractClient implements ClientInterface
     * var boolean Sets to TRUE if request can throw exception with mock responses
     */
     protected $_useExceptionResponse = false;
+    /**
+    * var Mr\Api\Http\Request
+    */
+    protected $_request;
+    /**
+    * var Mr\Api\Http\Response
+    */
+    protected $_response;
 
     public function __construct($host, $username, $password)
     {
@@ -87,14 +95,34 @@ class Client extends AbstractClient implements ClientInterface
 
     protected function call($method, $path, $parameters, $headers, $dataType)
     {
-        $request = new Request($this->getUrl($path), $method, $this->_username, $this->_password, $dataType);
-        $request->setHeaders($headers);
-        $request->setParameters($parameters);
-        $request->setResponses($this->_responses, $this->_useExceptionResponse);
+        $this->_request = new Request($this->getUrl($path), $method, $this->_username, $this->_password, $dataType);
+        $this->_request->setHeaders($headers);
+        $this->_request->setParameters($parameters);
+        $this->_request->setResponses($this->_responses, $this->_useExceptionResponse);
 
-        $response = $request->send();
+        $this->_response = $this->_request->send();
         
-        return $response->getContent();
+        return $this->_response->getContent();
+    }
+
+    /**
+    * Returns last request sent by this client
+    *
+    * @return Mr\Api\Http\Request
+    */
+    public function getRequest()
+    {
+        return $this->_request;
+    }
+
+    /**
+    * Returns last response received by this client
+    *
+    * @return Mr\Api\Http\Response
+    */
+    public function getResponse()
+    {
+        return $this->_response;
     }
 
     /**
