@@ -12,7 +12,7 @@ use Mr\Api\Util\CommonUtils;
  *
  * @category Class
  * @package  Mr\Api\Http
- * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @author   Michel Perez <michel.perez@mobilerider.com>
  * @license  Copyright (c) 2013 MobileRider Networks LLC
  * @link     https://github.com/mobilerider/mobilerider-php-sdk/
  */
@@ -24,7 +24,7 @@ use Mr\Api\Util\CommonUtils;
  *
  * @category Class
  * @package  Mr\Api\Http
- * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @author   Michel Perez <michel.perez@mobilerider.com>
  * @license  Copyright (c) 2013 MobileRider Networks LLC
  * @link     https://github.com/mobilerider/mobilerider-php-sdk/
  */
@@ -36,6 +36,8 @@ class Request
     protected $_headers = array();
     protected $_dataType;
     protected $_method;
+    protected $_responses = array();
+    protected $_useExceptionResponse = false;
 
     public function __construct($url, $method, $username, $password, $dataType = AbstractClient::DATA_TYPE_JSON)
     {
@@ -90,23 +92,51 @@ class Request
         $this->_parameters[$name] = $value;
     }
 
-    public function setParameters(array $parameters)
-    {
-        $this->_parameters = array_merge($this->_parameters, $parameters);
-    }
-
     public function setHeaders(array $headers)
     {
         $this->_headers = array_merge($this->_headers, $headers);
     }
 
-    public function addHeader($name, $value)
+    public function setParameters(array $parameters)
     {
-        $this->_headers[$name] = $value;
+        $this->_parameters = array_merge($this->_parameters, $parameters);
+    }
+
+    public function setResponses(array $responses, $useExceptionResponse)
+    {
+        $this->_responses = array_merge($this->_responses, $responses);
+        $this->_useExceptionResponse = $useExceptionResponse;
+    }
+
+    public function isMock()
+    {
+        return $this->_useExceptionResponse || !empty($this->_responses);
     }
 
     public function send()
     {
+        $adapter = null;
+
+        if ($this->isMock()) {
+            $adapter = new \HTTP_Request2_Adapter_Mock();
+
+            foreach ($this->_responses as $response) {
+                if (is_array($response)) {
+                    $adapter->addResponse($response[0], $response[1]);
+                } else {
+                    $adapter->addResponse($response);
+                }
+            }
+
+            if ($this->_useExceptionResponse) {
+                $adapter->addResponse(new \HTTP_Request2_Exception("Server Mock Response Exception!"));
+            }
+        }
+
+        if (!empty($adapter)) {
+            $this->_httpRequest->setAdapter($adapter);
+        }
+
         $this->_httpRequest->setHeader($this->_headers);
 
         $params = array();
