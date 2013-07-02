@@ -30,9 +30,26 @@ use Mr\Api\AbstractClient;
  */
 class Client extends AbstractClient implements ClientInterface
 {
+    /**
+    * var string Server Host for all requests
+    */
     protected $_host;
+    /**
+    * var string Username or application Id for all requests
+    */
     protected $_username;
+    /**
+    * var string Password or secret word for all requests
+    */
     protected $_password;
+    /**
+    * var array Mock responses for test purposes
+    */
+    protected $_responses = array();
+    /**
+    * var boolean Sets to TRUE if request can throw exception with mock responses
+    */
+    protected $_useExceptionResponse = false;
 
     public function __construct($host, $username, $password)
     {
@@ -46,11 +63,34 @@ class Client extends AbstractClient implements ClientInterface
         return sprintf('http://%s/%s', $this->_host, $path);
     }
 
+    public function addResponse($status = Response::STATUS_OK, $url = '', $content = '')
+    {
+        $phrase = Response::getPhraseStatus($status);
+        $response = "HTTP/1.1 {$status} {$phrase} \r\n Connection: close\r\n \r\n {$content}";
+        
+        if (empty($url)) {
+            $this->_responses[] = $response;
+        } else {
+            $this->_responses[] = array($response, $url);
+        }
+    }
+
+    public function addExceptionReponse()
+    {
+        $this->_useExceptionResponse;
+    }
+
+    public function isMock()
+    {
+        return $this->_useExceptionResponse || !empty($this->_responses);
+    }
+
     protected function call($method, $path, $parameters, $headers, $dataType)
     {
         $request = new Request($this->getUrl($path), $method, $this->_username, $this->_password, $dataType);
-        $request->setParameters($parameters);
         $request->setHeaders($headers);
+        $request->setParameters($parameters);
+        $request->setResponses($this->_responses, $this->_useExceptionResponse);
 
         $response = $request->send();
         
