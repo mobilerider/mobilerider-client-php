@@ -74,7 +74,7 @@ class Client extends AbstractClient implements ClientInterface
     public function addResponse($status = Response::STATUS_OK, $url = '', $content = '')
     {
         $phrase = Response::getPhraseStatus($status);
-        $response = "HTTP/1.1 {$status} {$phrase} \r\n Connection: close\r\n \r\n {$content}";
+        $response = "HTTP/1.1 {$status} {$phrase}\r\n Connection: close\r\n\r\n{$content}";
         
         if (empty($url)) {
             $this->_responses[] = $response;

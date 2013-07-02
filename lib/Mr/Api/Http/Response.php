@@ -46,7 +46,7 @@ class Response
         $this->_httpResponse = $httpResponse;
     }
 
-    public function isSuccessful()
+    public function isOK()
     {
         return $this->getStatus() == self::STATUS_OK;
     }
@@ -56,9 +56,14 @@ class Response
         return $this->_httpResponse->getStatus();
     }
 
+    public function getRawContent()
+    {
+        return $this->_httpResponse->getBody();
+    }
+
     public function getContent()
     {
-        $content = $this->_httpResponse->getBody();
+        $content = $this->getRawContent();
 
         switch ($this->_dataType) {
             case AbstractClient::DATA_TYPE_JSON:
