@@ -46,6 +46,16 @@ class Response
         $this->_httpResponse = $httpResponse;
     }
 
+    public function isSuccessful()
+    {
+        return $this->getStatus() == self::STATUS_OK;
+    }
+
+    public function getStatus()
+    {
+        return $this->_httpResponse->getStatus();
+    }
+
     public function getContent()
     {
         $content = $this->_httpResponse->getBody();
