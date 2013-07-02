@@ -9,7 +9,7 @@ namespace Mr\Exception;
  *
  * @category Class
  * @package  Mr\Exception
- * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @author   Michel Perez <michel.perez@mobilerider.com>
  * @license  Copyright (c) 2013 MobileRider Networks LLC
  * @link     https://github.com/mobilerider/mobilerider-php-sdk/
  */
@@ -21,7 +21,7 @@ namespace Mr\Exception;
  *
  * @category Class
  * @package  Mr\Exception
- * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @author   Michel Perez <michel.perez@mobilerider.com>
  * @license  Copyright (c) 2013 MobileRider Networks LLC
  * @link     https://github.com/mobilerider/mobilerider-php-sdk/
  */

@@ -11,7 +11,7 @@ use Mr\Api\Http\Client;
  *
  * @category Class
  * @package  Mr\Api
- * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @author   Michel Perez <michel.perez@mobilerider.com>
  * @license  Copyright (c) 2013 MobileRider Networks LLC
  * @link     https://github.com/mobilerider/mobilerider-php-sdk/
  */
@@ -23,7 +23,7 @@ use Mr\Api\Http\Client;
  *
  * @category Class
  * @package  Mr\Api
- * @author   Michel Perez <michel.perez8402@gmail.com>
+ * @author   Michel Perez <michel.perez@mobilerider.com>
  * @license  Copyright (c) 2013 MobileRider Networks LLC
  * @link     https://github.com/mobilerider/mobilerider-php-sdk/
  */
