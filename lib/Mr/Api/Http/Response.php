@@ -40,7 +40,7 @@ class Response
     protected $_httpResponse;
     protected $_dataType;
 
-    public function __construct($httpResponse, $dataType = AbstractClient::DATA_TYPE_JSON)
+    public function __construct(\HTTP_Request2_Response $httpResponse, $dataType = AbstractClient::DATA_TYPE_JSON)
     {
         $this->_dataType = $dataType;
         $this->_httpResponse = $httpResponse;
@@ -63,7 +63,7 @@ class Response
 
     public function getContent()
     {
-        $content = $this->getRawContent();
+        $content = $this->getRawContent();die($content);
 
         switch ($this->_dataType) {
             case AbstractClient::DATA_TYPE_JSON:
