@@ -4,6 +4,8 @@ namespace Mr\Api\Http;
 
 use Mr\Api\ClientInterface;
 use Mr\Api\AbstractClient;
+use Mr\Api\ClientAdapterInterface;
+use Mr\Api\Http\Adapter\BaseAdapter;
 
 /** 
  * Client Class file
@@ -43,14 +45,6 @@ class Client extends AbstractClient implements ClientInterface
     */
     protected $_password;
     /**
-    * var array Mock responses for test purposes
-    */
-    protected $_responses = array();
-    /**
-    * var boolean Sets to TRUE if request can throw exception with mock responses
-    */
-    protected $_useExceptionResponse = false;
-    /**
     * var Mr\Api\Http\Request
     */
     protected $_request;
@@ -58,12 +52,35 @@ class Client extends AbstractClient implements ClientInterface
     * var Mr\Api\Http\Response
     */
     protected $_response;
+    /**
+    * var Mr\Api\ClientAdapterInterface
+    */
+    protected $_adapter;
+    /**
+    * var array
+    */
+    protected $_config;
 
-    public function __construct($host, $username, $password)
+    public function __construct($host, $username = '', $password = '', array $config = array(), ClientAdapterInterface $adapter = null)
     {
         $this->_host = $host;
         $this->_username = $username;
         $this->_password = $password;
+
+        if ($adapter instanceof \HTTP_Request2_Adapter) {
+            throw new InvalidTypeException('\HTTP_Request2_Adapter', $adapter);
+        }
+
+        $this->_adapter = $adapter;
+
+        $this->_config = array_merge(array(
+            'dataType' => AbstractClient::DATA_TYPE_JSON
+        ), $config);
+    }
+
+    public function setGlobalConfig($name, $value)
+    {
+        $this->_config[$name] = $value;
     }
 
     protected function getUrl($path)
@@ -71,34 +88,19 @@ class Client extends AbstractClient implements ClientInterface
         return sprintf('http://%s/%s', $this->_host, $path);
     }
 
-    public function addResponse($status = Response::STATUS_OK, $url = '', $content = '')
+    protected function call($method, $path, $parameters, $headers, $config)
     {
-        $phrase = Response::getPhraseStatus($status);
-        $response = "HTTP/1.1 {$status} {$phrase}\r\n Connection: close\r\n\r\n{$content}";
-        
-        if (empty($url)) {
-            $this->_responses[] = $response;
-        } else {
-            $this->_responses[] = array($response, $url);
+        $this->_request = new Request($this->getUrl($path), $method, $this->_config);
+        $this->_request->setHeader($headers);
+        $this->_request->setParameter($parameters);
+
+        if (!empty($this->_username)) {
+            $this->_request->setAuth($this->_username, $this->_password, \HTTP_Request2::AUTH_DIGEST);
         }
-    }
 
-    public function addExceptionReponse()
-    {
-        $this->_useExceptionResponse;
-    }
-
-    public function isMock()
-    {
-        return $this->_useExceptionResponse || !empty($this->_responses);
-    }
-
-    protected function call($method, $path, $parameters, $headers, $dataType)
-    {
-        $this->_request = new Request($this->getUrl($path), $method, $this->_username, $this->_password, $dataType);
-        $this->_request->setHeaders($headers);
-        $this->_request->setParameters($parameters);
-        $this->_request->setResponses($this->_responses, $this->_useExceptionResponse);
+        if (!empty($this->_adapter)) {
+            $this->_request->setAdapter($this->_adapter);
+        }
 
         $this->_response = $this->_request->send();
         
@@ -128,32 +130,32 @@ class Client extends AbstractClient implements ClientInterface
     /**
     * {@inheritdoc }
     */
-    public function get($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON)
+    public function get($path, array $parameters = array(), array $headers = array(), $config = array())
     {
-        return $this->call(AbstractClient::METHOD_GET, $path, $parameters, $headers, $dataType);
+        return $this->call(AbstractClient::METHOD_GET, $path, $parameters, $headers, $config);
     }   
     
     /**
     * {@inheritdoc }
     */    
-    public function post($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON)
+    public function post($path, array $parameters = array(), array $headers = array(), $config = array())
     {
-        return $this->call(AbstractClient::METHOD_POST, $path, $parameters, $headers, $dataType);
+        return $this->call(AbstractClient::METHOD_POST, $path, $parameters, $headers, $config);
     }
 
     /**
     * {@inheritdoc }
     */
-    public function put($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON)
+    public function put($path, array $parameters = array(), array $headers = array(), $config = array())
     {
-        return $this->call(AbstractClient::METHOD_PUT, $path, $parameters, $headers, $dataType);
+        return $this->call(AbstractClient::METHOD_PUT, $path, $parameters, $headers, $config);
     }
 
     /**
     * {@inheritdoc }
     */
-    public function delete($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON)
+    public function delete($path, array $parameters = array(), array $headers = array(), $config = array())
     {
-        return $this->call(AbstractClient::METHOD_DELETE, $path, $parameters, $headers, $dataType);
+        return $this->call(AbstractClient::METHOD_DELETE, $path, $parameters, $headers, $config);
     }
 }
