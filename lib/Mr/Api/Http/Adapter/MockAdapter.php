@@ -2,6 +2,7 @@
 
 namespace Mr\Api\Http\Adapter;
 
+use Mr\Api\Http\Response;
 use Mr\Api\ClientAdapterInterface;
 
 class MockAdapter extends \HTTP_Request2_Adapter_Mock implements ClientAdapterInterface
