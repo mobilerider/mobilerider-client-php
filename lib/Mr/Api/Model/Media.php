@@ -1,6 +1,6 @@
 <?php 
 
-namespace "Mr\Api\Model";
+namespace Mr\Api\Model;
 
 /** 
  * Media Class file
