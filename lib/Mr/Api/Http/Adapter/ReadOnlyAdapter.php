@@ -4,6 +4,9 @@ namespace Mr\Api\Http\Adapter;
 
 class ReadOnlyAdapter extends BaseAdapter
 {
+	/**
+    * {@inheritdoc }
+    */
 	public function getDisallowedMethods()
 	{
 		return array(

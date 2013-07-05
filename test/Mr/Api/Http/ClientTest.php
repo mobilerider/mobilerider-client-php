@@ -5,6 +5,10 @@ namespace MrTest\Api\Http;
 use Mr\Api\Http\Client;
 use Mr\Api\Http\Response;
 use Mr\Api\AbstractClient;
+<<<<<<< HEAD
+=======
+use Mr\Api\Http\Adapter\MockAdapter;
+>>>>>>> develop
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
@@ -25,10 +29,22 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$path = '/test/path';
 
+<<<<<<< HEAD
 	    // Adds mock basic OK response
 	    $this->_client->addResponse();
 	    // Send request
 	    $this->_client->get($path);
+=======
+		$mockAdapter = new MockAdapter();
+	    // Adds mock basic OK response
+	    $mockAdapter->addResponseBy();
+	    // Add mock adapter
+	    $this->_client->setAdapter($mockAdapter);
+
+	    // Send request
+	    $this->_client->get($path);
+
+>>>>>>> develop
 	    // Gets message objects
 	    $request = $this->_client->getRequest();
 	    $response = $this->_client->getResponse();
@@ -38,7 +54,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    \PHPUnit_Framework_Assert::assertInstanceOf(self::CLIENT_NAMESPACE . 'Response', $response);
 	}
 
+<<<<<<< HEAD
 	public function testGetRequest()
+=======
+	/*public function testGetRequest()
+>>>>>>> develop
 	{
 		$path = '/test/path';
 		$headers = array('h1' => 'a', 'h2' => 'b');
@@ -180,5 +200,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	    }
 		
 	    \PHPUnit_Framework_Assert::assertTrue($response->isOK());
+<<<<<<< HEAD
 	}
+=======
+	}*/
+>>>>>>> develop
 }

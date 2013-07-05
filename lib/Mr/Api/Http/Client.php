@@ -6,6 +6,7 @@ use Mr\Api\ClientInterface;
 use Mr\Api\AbstractClient;
 use Mr\Api\ClientAdapterInterface;
 use Mr\Api\Http\Adapter\BaseAdapter;
+use Mr\Exception\InvalidTypeException;
 
 /** 
  * Client Class file
@@ -66,16 +67,20 @@ class Client extends AbstractClient implements ClientInterface
         $this->_host = $host;
         $this->_username = $username;
         $this->_password = $password;
-
-        if ($adapter instanceof \HTTP_Request2_Adapter) {
-            throw new InvalidTypeException('\HTTP_Request2_Adapter', $adapter);
-        }
-
-        $this->_adapter = $adapter;
+        $this->setAdapter($adapter);
 
         $this->_config = array_merge(array(
             'dataType' => AbstractClient::DATA_TYPE_JSON
         ), $config);
+    }
+
+    public function setAdapter(ClientAdapterInterface $adapter = null)
+    {
+        if (!empty($adapter) && !($adapter instanceof \HTTP_Request2_Adapter)) {
+            throw new InvalidTypeException('\HTTP_Request2_Adapter', $adapter);
+        }
+
+        $this->_adapter = $adapter;
     }
 
     public function setGlobalConfig($name, $value)

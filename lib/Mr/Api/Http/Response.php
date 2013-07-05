@@ -63,8 +63,13 @@ class Response
 
     public function getContent()
     {
+<<<<<<< HEAD
         $content = $this->getRawContent();die($content);
 
+=======
+        $content = $this->getRawContent();
+        
+>>>>>>> develop
         switch ($this->_dataType) {
             case AbstractClient::DATA_TYPE_JSON:
                 return CommonUtils::decodeJson($content);
