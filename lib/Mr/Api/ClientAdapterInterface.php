@@ -4,5 +4,5 @@ namespace Mr\Api;
 
 interface ClientAdapterInterface
 {
-	
+    
 }
