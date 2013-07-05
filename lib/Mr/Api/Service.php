@@ -50,7 +50,7 @@ class Service
 
     /**
     * Returns a new object from given model and initial data. 
-    * It does not execute any persisten action.
+    * It does not execute any persistent action.
     *
     * @param $model string
     * @param $data object | array
