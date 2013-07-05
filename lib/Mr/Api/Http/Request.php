@@ -31,12 +31,14 @@ use Mr\Api\Util\CommonUtils;
 class Request extends \HTTP_Request2
 {
     protected $_parameters = array();
-    protected $_dataType;
+    protected $_dataType = AbstractClient::DATA_TYPE_JSON;
 
     public function __construct($url, $method = AbstractClient::METHOD_GET, $config = array())
     {
-        $this->_dataType = isset($config['dataType']) ? $config['dataType'] : AbstractClient::DATA_TYPE_JSON;
-        unset($config['dataType']);
+        if (isset($config['dataType'])) {
+            $this->_dataType = $config['dataType'];
+            unset($config['dataType']);
+        }
 
         parent::__construct($url, $method, $config);
     }

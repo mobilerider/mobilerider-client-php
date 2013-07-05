@@ -23,6 +23,6 @@ class BaseAdapter extends \HTTP_Request2_Adapter implements ClientAdapterInterfa
             throw new NotAllowedMethodTypeException();
         }
 
-        parent::sendRequest($request);
+        return parent::sendRequest($request);
     }
 }

@@ -60,18 +60,17 @@ class Client extends AbstractClient implements ClientInterface
     /**
     * var array
     */
-    protected $_config;
+    protected $_config = array(
+        'dataType' => AbstractClient::DATA_TYPE_JSON
+    );
 
     public function __construct($host, $username = '', $password = '', array $config = array(), ClientAdapterInterface $adapter = null)
     {
         $this->_host = $host;
         $this->_username = $username;
         $this->_password = $password;
+        $this->_config = array_merge($this->_config, $config);
         $this->setAdapter($adapter);
-
-        $this->_config = array_merge(array(
-            'dataType' => AbstractClient::DATA_TYPE_JSON
-        ), $config);
     }
 
     public function setAdapter(ClientAdapterInterface $adapter = null)
@@ -95,10 +94,10 @@ class Client extends AbstractClient implements ClientInterface
 
     protected function call($method, $path, $parameters, $headers, $config)
     {
-        $this->_request = new Request($this->getUrl($path), $method, $this->_config);
-        $this->_request->setHeader($headers);
-        $this->_request->setParameter($parameters);
+        $config = array_merge($this->_config, $config);
 
+        $this->_request = new Request($this->getUrl($path), $method, $config);
+        
         if (!empty($this->_username)) {
             $this->_request->setAuth($this->_username, $this->_password, \HTTP_Request2::AUTH_DIGEST);
         }
@@ -106,6 +105,9 @@ class Client extends AbstractClient implements ClientInterface
         if (!empty($this->_adapter)) {
             $this->_request->setAdapter($this->_adapter);
         }
+
+        $this->_request->setHeader($headers);
+        $this->_request->setParameter($parameters);
 
         $this->_response = $this->_request->send();
         

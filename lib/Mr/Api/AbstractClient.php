@@ -29,10 +29,10 @@ use Mr\Exception\MrException;
  */
 abstract class AbstractClient implements ClientInterface
 {
-    const METHOD_GET = 'get';
-    const METHOD_POST = 'post';
-    const METHOD_PUT = 'put';
-    const METHOD_DELETE = 'delete';
+    const METHOD_GET = 'GET';
+    const METHOD_POST = 'POST';
+    const METHOD_PUT = 'PUT';
+    const METHOD_DELETE = 'DELETE';
 
     const DATA_TYPE_NONE = 'none';
     const DATA_TYPE_JSON = 'json';
