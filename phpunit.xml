@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit colors="true" boostrap="test/bootstrap.php">
+<phpunit colors="true" boostrap="./vendor/autoload.php">
     <testsuites>
         <testsuite name="MobileRider SDK Test Suite">
             <directory>./test/</directory>
