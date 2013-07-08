@@ -44,14 +44,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         \PHPUnit_Framework_Assert::assertInstanceOf(self::CLIENT_NAMESPACE . 'Response', $response);
     }
 
-    /*public function testGetRequest()
+    public function testGetRequest()
     {
         $path = '/test/path';
         $headers = array('h1' => 'a', 'h2' => 'b');
         $parameters = array('p1' => 'c', 'p2' => 'd');
 
+        $mockAdapter = new MockAdapter();
         // Adds mock basic OK response
-        $this->_client->addResponse();
+        $mockAdapter->addResponseBy();
+        // Add mock adapter
+        $this->_client->setAdapter($mockAdapter);
         // Send request
         $this->_client->get($path, $parameters, $headers);
         // Gets request object
@@ -68,8 +71,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $headers = array('h1' => 'a', 'h2' => 'b');
         $parameters = array('p1' => 'c', 'p2' => 'd');
 
+        $mockAdapter = new MockAdapter();
         // Adds mock basic OK response
-        $this->_client->addResponse();
+        $mockAdapter->addResponseBy();
+        // Add mock adapter
+        $this->_client->setAdapter($mockAdapter);
         // Send request
         $this->_client->post($path, $parameters, $headers);
         // Gets request object
@@ -86,8 +92,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $headers = array('h1' => 'a', 'h2' => 'b');
         $parameters = array('p1' => 'c', 'p2' => 'd');
 
+        $mockAdapter = new MockAdapter();
         // Adds mock basic OK response
-        $this->_client->addResponse();
+        $mockAdapter->addResponseBy();
+        // Add mock adapter
+        $this->_client->setAdapter($mockAdapter);
         // Send request
         $this->_client->put($path, $parameters, $headers);
         // Gets request object
@@ -104,8 +113,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $headers = array('h1' => 'a', 'h2' => 'b');
         $parameters = array('p1' => 'c', 'p2' => 'd');
 
+        $mockAdapter = new MockAdapter();
         // Adds mock basic OK response
-        $this->_client->addResponse();
+        $mockAdapter->addResponseBy();
+        // Add mock adapter
+        $this->_client->setAdapter($mockAdapter);
         // Send request
         $this->_client->delete($path, $parameters, $headers);
         // Gets request object
@@ -122,8 +134,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $headers = array('h1' => 'a', 'h2' => 'b');
         $parameters = array('p1' => 'c', 'p2' => 'd');
 
+        $mockAdapter = new MockAdapter();
         // Adds mock basic OK response
-        $this->_client->addResponse();
+        $mockAdapter->addResponseBy();
+        $mockAdapter->addResponseBy();
+        $mockAdapter->addResponseBy();
+        $mockAdapter->addResponseBy();
+        // Add mock adapter
+        $this->_client->setAdapter($mockAdapter);
 
         // Send GET request
         $method = AbstractClient::METHOD_GET;
@@ -167,8 +185,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $responseData = array('status' => 'ok', 'data' => 123, 'message' => 'This is a test');
         $responseContent = json_encode($responseData);
 
-        // Adds mock response with content
-        $this->_client->addResponse(Response::STATUS_OK, '', $responseContent);
+        $mockAdapter = new MockAdapter();
+        // Adds mock basic OK response
+        $mockAdapter->addResponseBy(Response::STATUS_OK, '', $responseContent);
+        // Add mock adapter
+        $this->_client->setAdapter($mockAdapter);
         // Send request
         $data = $this->_client->get($path, $parameters, $headers);
         // Gets response object
@@ -186,5 +207,5 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         }
         
         \PHPUnit_Framework_Assert::assertTrue($response->isOK());
-    }*/
+    }
 }
