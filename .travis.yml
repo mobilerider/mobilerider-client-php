@@ -8,7 +8,8 @@ php:
 #env:
 
 # execute any number of scripts before the test run, custom env's are available as variables
-#before_script:
+before_script:
+    - composer install
 
 script: phpunit #default
 
