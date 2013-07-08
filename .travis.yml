@@ -14,5 +14,6 @@ before_script:
 script: ./vendor/bin/phpunit
 
 notifications:
-    email: "michel.perez@mobilerider.com"
-    email: "julio@mobilerider.com"
+    email:
+        - michel.perez@mobilerider.com
+        - julio@mobilerider.com
