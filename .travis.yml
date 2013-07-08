@@ -15,3 +15,4 @@ script: ./vendor/bin/phpunit
 
 notifications:
     email: "michel.perez@mobilerider.com"
+    email: "julio@mobilerider.com"
