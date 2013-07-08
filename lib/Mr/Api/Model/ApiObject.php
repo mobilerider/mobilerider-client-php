@@ -78,7 +78,7 @@ abstract class ApiObject
     */
     public function getKeyField()
     {
-        return 'ID';
+        return 'id';
     }
 
     /**
@@ -148,10 +148,11 @@ abstract class ApiObject
             }
         } else if (is_array($data)) {
             $this->_data = array_merge($this->_data, $data);
-            $this->_isModified = true;
         } else {
             throw new \Exception("Invalid data format");
         }
+
+        $this->_isModified = true;
     }
 
     public function validate()
@@ -204,9 +205,9 @@ abstract class ApiObject
     }
 
     /**
-     * <b>Magic method</b>. Returns value of specified field
+     * <b>Magic method</b>. Returns value of specified property
      *
-     * @param string $name Field name
+     * @param string $name property name
      *
      * @return mixed
      */
@@ -218,10 +219,10 @@ abstract class ApiObject
     }
 
     /**
-     * <b>Magic method</b>. Sets value of field in row
+     * <b>Magic method</b>. Sets value of a dynamic property
      *
-     * @param string $name  Field name
-     * @param mixed  $value New value
+     * @param string $name property name
+     * @param mixed  $value new value
      *
      * @return mixed param value
      */
@@ -237,10 +238,23 @@ abstract class ApiObject
         $this->_isModified = $this->_isModified || $modified;
     }
 
+    /**
+     * <b>Magic method</b>. Checks if property exists 
+     *
+     * @param string $name property name
+     *
+     * @return boolean
+     */
+    public function __isset($name)
+    {
+        $name = strtolower($name);
+        return array_key_exists($name, $this->_data);
+    }
+
     public function __toString()
     {
         $strField = $this->getStringField();
-        return $this->{$strField} ? $this->{$strField} : var_export($this->_data);
+        return $this->{$strField} ? $this->{$strField} : var_export($this->_data, true);
     }
 
     /**
