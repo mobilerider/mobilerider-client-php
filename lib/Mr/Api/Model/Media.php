@@ -29,6 +29,6 @@ class Media extends ApiObject
 {
     public function getStringField()
     {
-        return 'Title';
+        return 'title';
     }
 }
