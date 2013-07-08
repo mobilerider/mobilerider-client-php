@@ -29,6 +29,6 @@ class Channel extends ApiObject
 {
     public function getStringField()
     {
-        return 'Name';
+        return 'name';
     }
 }

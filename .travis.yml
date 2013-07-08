@@ -1,0 +1,16 @@
+language: php
+
+php:
+    - 5.3
+    - 5.4
+
+# optionally specify a list of environments, for example to test different RDBMS or different framework versions
+#env:
+
+# execute any number of scripts before the test run, custom env's are available as variables
+#before_script:
+
+script: phpunit #default
+
+notifications:
+    email: "michel.perez@mobilerider.com"

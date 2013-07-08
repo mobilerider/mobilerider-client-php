@@ -1,6 +1,6 @@
 <?php 
 
-namespace "Mr\Api\Model";
+namespace Mr\Api\Model;
 
 /** 
  * Media Class file
@@ -29,6 +29,6 @@ class Media extends ApiObject
 {
     public function getStringField()
     {
-        return 'Title';
+        return 'title';
     }
 }

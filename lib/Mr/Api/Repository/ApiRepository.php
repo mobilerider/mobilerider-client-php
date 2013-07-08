@@ -80,7 +80,7 @@ abstract class ApiRepository
 
     /**
     * Returns a new model object. 
-    * It does not execute any persisten action
+    * It does not execute any persistent action
     *
     * @param $data object | array
     * @return Mr\Api\Model\ApiObject
