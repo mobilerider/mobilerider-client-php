@@ -1,6 +1,6 @@
-mobilerider-php-sdk
+mobilerider-client-php
 ===================
 
-Mobilerider PHP SDK
+Mobilerider PHP Client
 
-[![Build Status](https://travis-ci.org/mobilerider/mobilerider-php-sdk.png?branch=master,develop)](https://travis-ci.org/mobilerider/mobilerider-php-sdk)
+[![Build Status](https://travis-ci.org/mobilerider/mobilerider-client-php.png?branch=master,develop)](https://travis-ci.org/mobilerider/mobilerider-client-php)
