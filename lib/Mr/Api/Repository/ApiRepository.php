@@ -2,12 +2,17 @@
 
 namespace Mr\Api\Repository;
 
+// Model
+use Mr\Api\Model\ApiObject;
+
+// Client
 use Mr\Api\ClientInterface;
 use Mr\Api\AbstractClient;
+
+// Exceptions
 use Mr\Exception\ServerErrorException;
 use Mr\Exception\InvalidResponseException;
-use Mr\Api\Model;
-use Mr\Api\Model\ApiObject;
+use Mr\Exception\DeniedEntityAccessException;
 
 /** 
  * ApiRepository Class file
@@ -35,14 +40,23 @@ use Mr\Api\Model\ApiObject;
 abstract class ApiRepository
 {
     const API_URL_PREFIX = 'api';
-    const STATUS_OK = 'ok';
     const MODEL_NAMESPACE = 'Mr\\Api\\Model\\';
+
+    const STATUS_OK = 'ok';
+    const STATUS_NOT_FOUND_PATTERN = 'Unknown %s';
+    const STATUS_DENIED_ACCESS = 'Access denied';
 
     /**
     * var ClientInterface
     */
     protected $_client;
 
+    /**
+    * Constructor
+    *
+    * @param ClientInterface $client Client used to retrieve data
+    * @return void
+    */
     public function __construct(ClientInterface $client)
     {
         $this->_client = $client;
@@ -50,6 +64,8 @@ abstract class ApiRepository
 
     /**
     * Returns current model name, eg: Media
+    *
+    * @return string
     */
     public function getModel()
     {
@@ -60,12 +76,24 @@ abstract class ApiRepository
     /**
     * Returns TRUE if given response is valid or throw an exception otherwise
     *
+    * @throws DeniedEntityAccessException
+    * @throws ServerErrorException
+    * @throws InvalidResponseException
+    *
     * @param $response mixed
     * @return boolean
     */
     protected function validateResponse($response)
     {
-        $success = is_object($response) && $response->status == self::STATUS_OK;
+        $success = is_object($response) && (
+            self::STATUS_OK == $response->status ||
+            // Avoid throwing exception if the entity was not found, instead return null
+            sprintf(self::STATUS_NOT_FOUND_PATTERN, strtolower($this->getModel())) == $response->status
+        );
+
+        if (!$success && self::STATUS_DENIED_ACCESS == $response->status) {
+            throw new DeniedEntityAccessException();
+        } 
 
         if (!$success) {
             if (is_object($response) && $response->status) {
@@ -106,7 +134,7 @@ abstract class ApiRepository
         
         $response = $this->_client->get($path);
 
-        if ($this->validateResponse($response)) {
+        if ($this->validateResponse($response) && !empty($response->object)) {
             return $this->create($response->object);
         }
 
@@ -125,7 +153,7 @@ abstract class ApiRepository
         $response = $this->_client->get($path);
         $results = array();
 
-        if ($this->validateResponse($response)) {
+        if ($this->validateResponse($response) && !empty($response->objects)) {
             foreach ($response->objects as $object) {
                 $results[] = $this->create($object);
             }
@@ -138,6 +166,7 @@ abstract class ApiRepository
     * Deletes given model object.
     *
     * @param $object Mr\Api\Model\ApiObject
+    * @return void
     */
     public function delete(ApiObject $object)
     {
@@ -155,7 +184,10 @@ abstract class ApiRepository
     /**
     * Saves given model object.
     *
+    * @throws InvalidDataOperationException
+    *
     * @param $object Mr\Api\Model\ApiObject
+    * @return void
     */
     public function save(ApiObject $object)
     {
