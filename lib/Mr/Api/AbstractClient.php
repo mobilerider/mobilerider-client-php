@@ -2,6 +2,8 @@
 
 namespace Mr\Api;
 
+use Mr\Exception\MrException;
+
 /** 
  * AbstractClient Class file
  *
@@ -27,10 +29,10 @@ namespace Mr\Api;
  */
 abstract class AbstractClient implements ClientInterface
 {
-    const METHOD_GET = 'get';
-    const METHOD_POST = 'post';
-    const METHOD_PUT = 'put';
-    const METHOD_DELETE = 'delete';
+    const METHOD_GET = 'GET';
+    const METHOD_POST = 'POST';
+    const METHOD_PUT = 'PUT';
+    const METHOD_DELETE = 'DELETE';
 
     const DATA_TYPE_NONE = 'none';
     const DATA_TYPE_JSON = 'json';
@@ -43,10 +45,9 @@ abstract class AbstractClient implements ClientInterface
     * @param string $path Url where to send the request, without host.
     * @param array $parameters Parameter values that will be send within the url as query vars.
     * @param array $headers Header values to be included on the request.
-    * @param string $dataType Data type of the transaction request parameters and response content 
-    * will be parsed / econded with given format, default is JSON (Only one implemented).
+    * @param array $config List of config key-pair values
     */
-    public abstract function get($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON);
+    public abstract function get($path, array $parameters = array(), array $headers = array(), $config = array());
     
     /**
     * Creates and sends a request using POST method.
@@ -54,10 +55,9 @@ abstract class AbstractClient implements ClientInterface
     * @param string $path Url where to send the request, without host.
     * @param array $parameters Parameter values that will be included as post parameters in request.
     * @param array $headers Header values to be included on the request.
-    * @param string $dataType Data type of the transaction request parameters and response content 
-    * will be parsed / econded with given format, default is JSON (Only one implemented).
+    * @param array $config List of config key-pair values
     */
-    public abstract function post($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON);
+    public abstract function post($path, array $parameters = array(), array $headers = array(), $config = array());
     
     /**
     * Creates and sends a request using PUT method.
@@ -65,10 +65,9 @@ abstract class AbstractClient implements ClientInterface
     * @param string $path Url where to send the request, without host.
     * @param array $parameters Parameter values that will be included as post parameters in request.
     * @param array $headers Header values to be included on the request.
-    * @param string $dataType Data type of the transaction request parameters and response content 
-    * will be parsed / econded with given format, default is JSON (Only one implemented).
+    * @param array $config List of config key-pair values
     */
-    public abstract function put($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON);
+    public abstract function put($path, array $parameters = array(), array $headers = array(), $config = array());
     
     /**
     * Creates and sends a request using DELETE method.
@@ -76,10 +75,9 @@ abstract class AbstractClient implements ClientInterface
     * @param string $path Url where to send the request, without host.
     * @param array $parameters Parameter values that will be included as post parameters in request.
     * @param array $headers Header values to be included on the request.
-    * @param string $dataType Data type of the transaction request parameters and response content 
-    * will be parsed / econded with given format, default is JSON (Only one implemented).
+    * @param array $config List of config key-pair values
     */
-    public abstract function delete($path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON);
+    public abstract function delete($path, array $parameters = array(), array $headers = array(), $config = array());
 
     /**
     * Creates and sends a request.
@@ -88,10 +86,9 @@ abstract class AbstractClient implements ClientInterface
     * @param string $path Url where to send the request, without host.
     * @param array $parameters Parameter values that will be included as post parameters in request.
     * @param array $headers Header values to be included on the request.
-    * @param string $dataType Data type of the transaction request parameters and response content 
-    * will be parsed / econded with given format, default is JSON (Only one implemented).
+    * @param array $config List of config key-pair values
     */
-    public function request($method, $path, array $parameters = array(), array $headers = array(), $dataType = AbstractClient::DATA_TYPE_JSON)
+    public function request($method, $path, array $parameters = array(), array $headers = array(), $config = array())
     {
         $args = func_get_args();
         array_shift($args);
@@ -99,11 +96,11 @@ abstract class AbstractClient implements ClientInterface
         switch ($method) {
             case self::METHOD_GET:
             case self::METHOD_POST:
-            case self::METHOD_GET:
             case self::METHOD_PUT:
-                return call_user_func_array(array($this, $method), $args);
+            case self::METHOD_DELETE:
+                return call_user_func_array(array($this, strtolower($method)), $args);
             default:
-                throw new Exception("Invalid method");
+                throw new MrException("Invalid request method");
         }
     }
 }
