@@ -80,7 +80,7 @@ if ($cmdline_result->options['print_uncovered']) {
             }
         }
         $source_code = explode("\n", file_get_contents($file['name']));
-        $output_source_code = [];
+        $output_source_code = array();
         foreach ($source_code as $line) {
             $output_source_code[] = array($line, NULL);
         }
