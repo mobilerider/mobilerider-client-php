@@ -31,4 +31,17 @@ class ServiceTest extends \PHPUnit_Framework_TestCase {
         $obj = $this->_service->create('Media', $data);
         $this->assertEquals($data, $obj->getData());
     }
+
+    public function testGetAllChannelRepositoryObjects() {
+
+        $path = '/test/path';
+        $mockAdapter = new MockAdapter();
+        // Adds mock basic OK response
+        $mockAdapter->addResponseBy(Response::STATUS_OK, $path, '[]');
+        // Add mock adapter
+        $service_client = $this->_service->getClient();
+        $service_client->setAdapter($mockAdapter);
+
+        $this->assertCount(0, $this->_service->getAll('Channel'));
+    }
 }
