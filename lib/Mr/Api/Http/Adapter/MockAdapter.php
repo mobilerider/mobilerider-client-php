@@ -19,7 +19,7 @@ class MockAdapter extends \HTTP_Request2_Adapter_Mock implements ClientAdapterIn
     {
         $phrase = Response::getPhraseStatus($status);
         $response = "HTTP/1.1 {$status} {$phrase}\r\n Connection: close\r\n\r\n{$content}";
-        
+
         $this->addResponse($response);
     }
 
@@ -30,6 +30,6 @@ class MockAdapter extends \HTTP_Request2_Adapter_Mock implements ClientAdapterIn
     */
     public function addExceptionReponse()
     {
-        $adapter->addResponse(new \HTTP_Request2_Exception("Server Mock Response Exception!"));
+        $this->addResponse(new \HTTP_Request2_Exception("Server Mock Response Exception!"));
     }
 }
