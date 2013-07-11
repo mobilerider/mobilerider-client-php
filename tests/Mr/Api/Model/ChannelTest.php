@@ -63,4 +63,28 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $channel = $this->getDummyChannel(array('id'=>1, 'name'=>'some_name'));
         $this->assertEquals('some_name', $channel . '');
     }
+
+    /**
+     * @expectedException Mr\Exception\InvalidRepositoryException
+     */
+    public function testDeletedDelete() {
+        $channel = $this->getDummyChannel(array('id'=>1, 'name'=>'some_name'));
+        $this->assertFalse($channel->isNew());
+        $channel->deleted();
+        $this->assertTrue($channel->isNew());
+        $this->assertFalse($channel->isModified());
+        $channel->delete();
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidRepositoryException
+     */
+    public function testDeletedSave() {
+        $channel = $this->getDummyChannel(array('id'=>1, 'name'=>'some_name'));
+        $this->assertFalse($channel->isNew());
+        $channel->deleted();
+        $this->assertTrue($channel->isNew());
+        $this->assertFalse($channel->isModified());
+        $channel->save();
+    }
 }

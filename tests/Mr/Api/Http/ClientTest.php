@@ -223,4 +223,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function testExceptionThrownForInvalidAdapterTypes() {
         $this->_client->setAdapter(new ImplementedClientAdapterInterface());
     }
+
+    public function testSetGlobalConfig()
+    {
+        $this->_client->setGlobalConfig('some_config_key', 'some_config_value');
+    }
 }
