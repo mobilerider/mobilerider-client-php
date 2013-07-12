@@ -4,7 +4,9 @@ namespace Mr\Api\Repository;
 
 // Model
 use Mr\Api\Model\ApiObject;
-use Mr\Api\Model\ApiObjectCollection;
+
+// Collection
+use Mr\Api\Collection\ApiObjectCollection;
 
 // Client
 use Mr\Api\ClientInterface;
@@ -131,9 +133,12 @@ abstract class ApiRepository
     * @param array $filters
     * @return array $filters
     */
-    protected function validateFilters(array $filters)
+    protected function validateFilters($filters)
     {
+        $filters = !empty($filters) ? $filters : array();
+        $filters = is_array($filters) ? $filters : array($filters);
         $filters = array_merge($this->_filterDefaults, $filters);
+        
         $diff = array_diff_key($this->_filterDefaults, $filters);
 
         if (!empty($diff)) {
