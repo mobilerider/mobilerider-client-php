@@ -302,11 +302,6 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         }
     }
 
-    public function removeByIndex($index)
-    {
-        $this->remove($this->getByIndex($offset));
-    }
-
     public function exists($object)
     {
         $id = $this->obtainIdFrom($object);
@@ -356,6 +351,11 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
             // Clear invalid page mappings
             array_slice($this->_pages, $this->getPageOf($id));
         }
+    }
+
+    public function removeByIndex($index)
+    {
+        $this->remove($this->getByIndex($offset));
     }
 
     public function save()
@@ -420,6 +420,6 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function offsetUnset($offset)
     {
-        $this->delete($offset);
+        $this->removeByIndex($offset);
     }
 }
