@@ -10,15 +10,15 @@ use Mr\Exception\InvalidTypeException;
 
 class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollectionInterface
 {
-    private $_isInitialized = false;
+    protected $_isInitialized = false;
 
-    private $_objects = array();
-    private $_pages = array();
-    private $_dirtyObjects = array();
+    protected $_objects = array();
+    protected $_pages = array();
+    protected $_dirtyObjects = array();
 
-    private $_limit;
+    protected $_limit;
 
-    private $_repository;
+    protected $_repository;
 
     public function __construct(ApiRepository $repository, $page = 1)
     {
