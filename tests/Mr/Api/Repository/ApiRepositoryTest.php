@@ -16,6 +16,7 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
     const USERNAME = 'user';
     const PASSWORD = 'pass';
     const MODEL_NAMESPACE = 'Mr\\Api\\Model\\';
+    const COLLECTION_NAMESPACE = 'Mr\\Api\\Collection\\';
 
     protected $channelData = array(
         'status' => ApiRepository::STATUS_OK,
@@ -25,8 +26,15 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
             'name' => 'Channel 1'
         )
     );
+
     protected $channelsData = array(
         'status' => ApiRepository::STATUS_OK,
+        'meta' => array(
+            'total' => 3,
+            'page' => 1,
+            'pages' => 11,
+            'limit' => 1
+        ),
         'objects' => array(
              array(
                 'id' => 1,
@@ -56,20 +64,52 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
         $this->_client->setAdapter($this->_clientMockAdapter);
     }
 
-    protected function validatesObjectData($dataObjects, $returnedModelObjects)
+    protected function validatesObjectsData($dataObjects, $returnedModelObjects)
     {
         $dataObjects = is_array($dataObjects) ? $dataObjects : array($dataObjects);
         $returnedModelObjects = is_array($returnedModelObjects) ? $returnedModelObjects : array($returnedModelObjects);
 
         foreach ($dataObjects as $index => $data) {
-            $object = $returnedModelObjects[$index];
-            foreach ($data as $key => $value) {
-                // Check property existance
-                \PHPUnit_Framework_Assert::assertArrayHasKey($key, $object->getData());
-                // Check for same value
-                \PHPUnit_Framework_Assert::assertEquals($value, $object->{$key});
+            \PHPUnit_Framework_Assert::assertArrayHasKey($index, $returnedModelObjects);
+
+            if (array_key_exists($index, $returnedModelObjects)) { 
+                $object = $returnedModelObjects[$index];
+
+                foreach ($data as $key => $value) {
+                    // Check property existance
+                    \PHPUnit_Framework_Assert::assertArrayHasKey($key, $object->getData());
+                    // Check for same value
+                    \PHPUnit_Framework_Assert::assertEquals($value, $object->{$key});
+                }
             }
         }
+    }
+
+    public function testGetAllMetadata()
+    {
+        // Creating response with specific url
+        $this->_clientMockAdapter->addResponseBy(Response::STATUS_OK, 'api/channel', json_encode($this->channelsData));
+
+        $repo = new ChannelRepository($this->_client);
+        $metadata = array();
+        $channels = $repo->getAll(null, $metadata, false);
+
+        \PHPUnit_Framework_Assert::assertEquals($this->channelsData['meta'], $metadata);
+    }
+
+    public function testCollectionReturnType()
+    {
+        // Creating response with specific url
+        $this->_clientMockAdapter->addResponseBy(Response::STATUS_OK, 'api/channel', json_encode($this->channelsData));
+
+        $repo = new ChannelRepository($this->_client);
+        $metadata = array();
+        $channels = $repo->getAll();
+
+        \PHPUnit_Framework_Assert::assertInstanceOf(self::COLLECTION_NAMESPACE . 'ApiObjectCollection', $channels);
+        // At this points none server request should has done due to the lazy behavior
+        $this->assertNull($this->_client->getRequest());
+        $this->assertNull($this->_client->getResponse());
     }
 
     public function testGetAllChannels()
@@ -94,7 +134,7 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
         }
 
         // Validating fields data
-        $this->validatesObjectData($this->channelsData['objects'], $channels);
+        $this->validatesObjectsData($this->channelsData['objects'], $channels);
     }
 
     public function testGetOneChannel()
@@ -114,6 +154,6 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
         }
 
         // Validating fields data
-        $this->validatesObjectData(array($this->channelData['object']), $channel);
+        $this->validatesObjectsData(array($this->channelData['object']), $channel);
     }
 }
