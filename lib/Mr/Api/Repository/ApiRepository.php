@@ -203,7 +203,7 @@ abstract class ApiRepository
             $response = $this->_client->get($path, $this->validateFilters($filters));
             $results = array();
 
-            if (!empty($metadata)) {
+            if ($metadata !== null && is_array($metadata)) {
                 $metadata = array_merge($metadata, $this->validateMetadata($response));
             }
 
