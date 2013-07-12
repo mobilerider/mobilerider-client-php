@@ -32,8 +32,8 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
         'meta' => array(
             'total' => 3,
             'page' => 1,
-            'pages' => 3,
-            'limit' => 1
+            'pages' => 1,
+            'limit' => 3
         ),
         'objects' => array(
              array(
