@@ -32,7 +32,7 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
         'meta' => array(
             'total' => 3,
             'page' => 1,
-            'pages' => 11,
+            'pages' => 3,
             'limit' => 1
         ),
         'objects' => array(
@@ -103,7 +103,6 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
         $this->_clientMockAdapter->addResponseBy(Response::STATUS_OK, 'api/channel', json_encode($this->channelsData));
 
         $repo = new ChannelRepository($this->_client);
-        $metadata = array();
         $channels = $repo->getAll();
 
         \PHPUnit_Framework_Assert::assertInstanceOf(self::COLLECTION_NAMESPACE . 'ApiObjectCollection', $channels);
