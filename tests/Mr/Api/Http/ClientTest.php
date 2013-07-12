@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace MrTest\Api\Http;
 
@@ -6,6 +6,14 @@ use Mr\Api\Http\Client;
 use Mr\Api\Http\Response;
 use Mr\Api\AbstractClient;
 use Mr\Api\Http\Adapter\MockAdapter;
+use Mr\Exception\InvalidTypeException;
+use Mr\Api\ClientAdapterInterface;
+
+
+class ImplementedClientAdapterInterface implements ClientAdapterInterface {
+    // foo?
+}
+
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
@@ -202,10 +210,22 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         \PHPUnit_Framework_Assert::assertInternalType(\PHPUnit_Framework_Constraint_IsType::TYPE_OBJECT, $data);
         // Check data parsed
         foreach ($responseData as $key => $value) {
-            \PHPUnit_Framework_Assert::assertObjectHasAttribute($key, $data);      
-            \PHPUnit_Framework_Assert::assertEquals($value, $data->{$key}); 
+            \PHPUnit_Framework_Assert::assertObjectHasAttribute($key, $data);
+            \PHPUnit_Framework_Assert::assertEquals($value, $data->{$key});
         }
-        
+
         \PHPUnit_Framework_Assert::assertTrue($response->isOK());
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidTypeException
+     */
+    public function testExceptionThrownForInvalidAdapterTypes() {
+        $this->_client->setAdapter(new ImplementedClientAdapterInterface());
+    }
+
+    public function testSetGlobalConfig()
+    {
+        $this->_client->setGlobalConfig('some_config_key', 'some_config_value');
     }
 }

@@ -103,7 +103,7 @@ abstract class ApiRepository
             sprintf(self::STATUS_NOT_FOUND_PATTERN, strtolower($this->getModel())) == $response->status
         );
 
-        if (!$success && self::STATUS_DENIED_ACCESS == $response->status) {
+        if (!$success && is_object($response) && self::STATUS_DENIED_ACCESS == $response->status) {
             throw new DeniedEntityAccessException();
         } 
 

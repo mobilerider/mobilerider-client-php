@@ -2,6 +2,9 @@
 
 namespace Mr\Api\Http\Adapter;
 
+use Mr\Api\ClientAdapterInterface;
+
+
 class BaseAdapter extends \HTTP_Request2_Adapter implements ClientAdapterInterface
 {
     /**
