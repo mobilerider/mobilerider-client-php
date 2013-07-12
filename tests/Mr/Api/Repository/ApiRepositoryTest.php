@@ -78,7 +78,8 @@ class ApiRepositoryTest extends \PHPUnit_Framework_TestCase
         $this->_clientMockAdapter->addResponseBy(Response::STATUS_OK, 'api/channel', json_encode($this->channelsData));
 
         $repo = new ChannelRepository($this->_client);
-        $channels = $repo->getAll();
+        $metadata = array();
+        $channels = $repo->getAll(null, $metadata, false);
 
         // Checking response (validating specific url was matched)
         \PHPUnit_Framework_Assert::assertTrue($this->_client->getResponse()->isOK());
