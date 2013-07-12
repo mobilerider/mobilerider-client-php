@@ -4,6 +4,7 @@ namespace Mr\Api\Repository;
 
 // Model
 use Mr\Api\Model\ApiObject;
+use Mr\Api\Model\ApiObjectCollection;
 
 // Client
 use Mr\Api\ClientInterface;
@@ -50,6 +51,15 @@ abstract class ApiRepository
     * var ClientInterface
     */
     protected $_client;
+    protected $_metadataDefaults = array(
+        'total' => 0,
+        'pages' => 0,
+        'page' => 1,
+        'limit' => 20
+    );
+    protected $_filterDefaults = array(
+        'page' => 1
+    );
 
     /**
     * Constructor
@@ -106,6 +116,35 @@ abstract class ApiRepository
         return $success;
     }
 
+    protected function validateMetadata($response)
+    {
+        // Check for metadata to exists
+        $metadata = isset($response->meta) ? get_object_vars($response->meta) : array();
+        // Use metadata defaults
+        return array_merge($this->_metadataDefaults, $metadata);
+    }
+
+    /**
+    * Checks if the set of filters given are allowed by the server methods
+    *
+    * @throws InvalidFiltersException
+    * @param array $filters
+    * @return array $filters
+    */
+    protected function validateFilters(array $filters)
+    {
+        $filters = array_merge($this->_filterDefaults, $filters);
+        $diff = array_diff_key($this->_filterDefaults, $filters);
+
+        if (!empty($diff)) {
+            throw new InvalidFiltersException($diff, $array_keys($this->_filterDefaults));
+        }
+
+        //@TODO: check the type filters
+
+        return $filters;
+    }
+
     /**
     * Returns a new model object. 
     * It does not execute any persistent action
@@ -142,24 +181,39 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns a all objects from this model. 
+    * Returns a all objects from this model.
     *
-    * @return array
+    * @param array | null $filters Filters for the server request, only page supported for now
+    * @param &array | null $metadata Variable to store objects metadata in
+    * @param boolean $lazy If TRUE this methods sends an inmediate request and returns the results 
+    *        from server otherwise none request is done yet and an ApiObjectCollection is returned
+    * @return ApiObjectCollection | array
     */
-    public function getAll()
+    public function getAll($filters = array(), &$metadata = null, $lazy = true)
     {
-        $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-        
-        $response = $this->_client->get($path);
-        $results = array();
+        //@TODO: Check metadata provided and lazy flag to avoid any chance of infinite loop
+        if (!$lazy) {
+            $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
+            
+            $response = $this->_client->get($path, $this->validateFilters($filters));
+            $results = array();
 
-        if ($this->validateResponse($response) && !empty($response->objects)) {
-            foreach ($response->objects as $object) {
-                $results[] = $this->create($object);
+            if (!empty($metadata)) {
+                $metadata = array_merge($metadata, $this->validateMetadata($response));
             }
+
+            if ($this->validateResponse($response) && !empty($response->objects)) {
+                foreach ($response->objects as $object) {
+                    $results[] = $this->create($object);
+                }
+            }
+
+            return $results;
         }
 
-        return $results;
+        $page = isset($filters['page']) ? $filters['page'] : $this->_metadataDefaults['page'];
+
+        return new ApiObjectCollection($this, $page);
     }
 
     /**
