@@ -276,10 +276,22 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
         $this->_dirtyObjects[] = $this->validateObject($object);
     }
 
-    public function insert($index, ApiObject $object)
+    public function update(ApiObject $object)
     {
-        $item = $this->getByIndex($index);
-        $item->updateData($this->validateObject($object)->getData());
+        $this->validateObject($object);
+
+        if ($internalObj = $this->get($object->getId())) {
+            $internalObj->updateData($object->getData());
+        }
+    }
+
+    public function updateByIndex($index, ApiObject $object)
+    {
+        $this->validateObject($object);
+        
+        if ($internalObj = $this->getByIndex($index)) {
+            $internalObj->updateData($object->getData());
+        }
     }
 
     public function removeByIndex($index)
@@ -395,7 +407,7 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
 
     public function offsetSet($offset, $value)
     {
-        $this->insert($offset, $value);
+        $this->updateByIndex($offset, $value);
     }
 
     public function offsetUnset($offset)
