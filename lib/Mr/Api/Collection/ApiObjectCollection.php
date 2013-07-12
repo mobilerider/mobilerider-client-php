@@ -12,10 +12,13 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 {
     protected $_isInitialized = false;
 
+    // Object storage
     protected $_objects = array();
-    protected $_pages = array();
     protected $_dirtyObjects = array();
+    protected $_pages = array();
 
+    // Metadata storage
+    protected $_total;
     protected $_limit;
 
     protected $_repository;
@@ -26,6 +29,8 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
         if ($page > 1) {
             $this->setCurrentPage($page);
+        } else {
+            $this->_page = 1;
         }
     }
 
@@ -89,9 +94,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     * @param mixed $id
     * @return boolean
     */
-    protected function isItemLoaded($id)
+    protected function isObjectLoaded($id)
     {
-        return array_key_exists($id, $this->_objects);
+        return $this->_isInitialized && array_key_exists($id, $this->_objects);
     }
 
     /**
@@ -103,7 +108,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     */
     protected function isPageLoaded($page)
     {
-        return array_key_exists($page, $this->_pages);
+        return $this->_isInitialized && array_key_exists($page, $this->_pages);
     }
 
     /**
@@ -114,7 +119,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     */
     protected function isFullyLoaded()
     {
-        return count($this->_objects) == $this->_total;
+        return $this->_isInitialized && count($this->_objects) == $this->_total;
     }
 
     /**
@@ -153,7 +158,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     */
     protected function load($page = 0)
     {
-        $page = $page ? $page : $this->_page;
+        $page = $page ? $this->validatePage($page) : $this->_page;
 
         if (!$this->isPageLoaded($page)) {
             $metadata = $this->getMetadata();
@@ -179,6 +184,8 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
                 }
             }
         }
+
+        return $this->_pages[$page];
     }
 
     /**
@@ -306,7 +313,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     {
         $id = $this->obtainIdFrom($object);
 
-        if ($this->isItemLoaded($id)) {
+        if ($this->isObjectLoaded($id)) {
             return true;
         } else if (!$this->isFullyLoaded()) {
             // Check server for this item
@@ -333,11 +340,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function getObjects($page = 0)
     {
-        $page = $page ? $this->validatePage($page) : $this->_page;
+        $this->initialize();
 
-        $this->load($page);
-
-        return array_values($this->_pages[$page]);
+        return array_values($this->load($page));
     }
 
     public function remove($object)
@@ -373,7 +378,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
         $this->_repository->save($modifiedObjects);
 
-        // If new objects has been saved, clear cached data
+        // If new were submitted to be saved, clear cached data (probably invalid now)
         if (!empty($this->_dirtyObjects)) {
             $this->clear();
             $this->_dirtyObjects = array();
@@ -405,7 +410,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function offsetExists($offset)
     {
-        return $this->validateIndex($object);
+        return $this->validateIndex($offset);
     }
 
     public function offsetGet($offset)
@@ -421,5 +426,21 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     public function offsetUnset($offset)
     {
         $this->removeByIndex($offset);
+    }
+
+    /**
+    * Methods redefined from the AbstractPaginator
+    */
+
+    public function setCurrentPage($page)
+    {
+        $this->initialize();
+        parent::setCurrentPage($page);
+    }
+
+    public function hasNextPage()
+    {
+        $this->initialize();
+        return parent::hasNextPage();
     }
 }

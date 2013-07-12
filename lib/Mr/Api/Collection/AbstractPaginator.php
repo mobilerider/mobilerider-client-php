@@ -8,11 +8,6 @@ class AbstractPaginator
     protected $_total;
 	protected $_pageTotal;
 
-	protected function initialize()
-	{
-		$this->_page = 1;
-	}
-
     protected function validatePage($page)
     {
         return min($this->_pageTotal, max(0, $page));
@@ -20,8 +15,6 @@ class AbstractPaginator
 
     public function setCurrentPage($page)
     {
-        $this->initialize();
-
         $this->_page = $this->validatePage($page);
     }
 
@@ -46,8 +39,6 @@ class AbstractPaginator
 
     public function hasNextPage()
     {
-        $this->initialize();
-
         return $this->_page < $this->_pageTotal;
     }
 
