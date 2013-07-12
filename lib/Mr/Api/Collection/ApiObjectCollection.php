@@ -236,6 +236,12 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return $this->_repository->getModel();
     }
 
+    /**
+    * Returns a list of ids from all objects
+    * This method forces a massive load of all objects
+    *
+    * @return array
+    */
     public function getIds()
     {
         $this->initialize();
@@ -245,6 +251,13 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return array_keys($this->_objects);
     }
 
+    /**
+    * Returns an object by its given numeric index.
+    * If the object is not found returns NULL
+    *
+    * @param integer $index
+    * @return ApiObject | null
+    */
     public function getByIndex($index)
     {
         if ($this->validateIndex($index)) {
@@ -266,6 +279,13 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return null;
     }
 
+    /**
+    * Returns an object by its primary key
+    * If the object is not found returns NULL
+    *
+    * @param mixed $id
+    * @return ApiObject | null
+    */
     public function get($id)
     {
         $this->initialize();
@@ -277,6 +297,12 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return null;
     }
 
+    /**
+    * Returns a list containing all objects.
+    * This method forces a massive load of all objects.
+    *
+    * @return array
+    */
     public function toArray()
     {
         $this->initialize();
@@ -286,17 +312,36 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return array_values($this->_objects);
     }
 
+    /**
+    * Cleans internal storage including all objects and pages.
+    *
+    * @return void
+    */
     public function clear()
     {
         $this->_objects = array();
         $this->_pages = array();
     }
 
+    /**
+    * Adds a new object to this collection to be saved.
+    * The object attached will NOT be accessible until the collection be saved
+    *
+    * @param ApiObject
+    * @return void
+    */
     public function add(ApiObject $object)
     {
         $this->_dirtyObjects[] = $this->validateObject($object);
     }
 
+    /**
+    * Updates object data with the data of another given object.
+    * Returns TRUE if the object was found.
+    *
+    * @param ApiObject $object
+    * @return boolean
+    */
     public function update(ApiObject $object)
     {
         $this->initialize();
@@ -305,9 +350,20 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
         if ($internalObj = $this->get($object->getId())) {
             $internalObj->updateData($object->getData());
+            return true;
         }
+
+        return false;
     }
 
+    /**
+    * Updates object data with the data of another given object.
+    * Returns TRUE if the object was found.
+    *
+    * @param integer $index
+    * @param ApiObject $object
+    * @return boolean
+    */
     public function updateByIndex($index, ApiObject $object)
     {
         $this->initialize();
@@ -319,6 +375,14 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         }
     }
 
+    /**
+    * Returns TRUE if an object is found given another object or 
+    * a primary key value. This method will check the server if the object 
+    * is not found locally and the collection is not fully loaded at the moment
+    *
+    * @param mixed $object ApiObject or primery key
+    * @return boolean
+    */
     public function exists($object)
     {
         $this->initialize();
@@ -339,6 +403,14 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return false;
     }
 
+    /**
+    * Adds several new objects to be saved
+    * Objects attached will NOT be accessible until the collection be saved.
+    * If there were new objects from other additions they will be LOST
+    *
+    * @param array $objects
+    * @return void
+    */
     public function setObjects(array $objects)
     {
         $this->_dirtyObjects = array();
@@ -350,6 +422,13 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         }
     }
 
+    /**
+    * Returns objects loaded from given page
+    * If not page is given, it uses current page
+    *
+    * @param integer $page
+    * @return array 
+    */
     public function getObjects($page = 0)
     {
         $this->initialize();
@@ -357,28 +436,56 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return array_values($this->load($page));
     }
 
-    public function remove($object)
+    /**
+    * Removes an object from the collection and PERSIST de action on server side.
+    *
+    * @param mixed $object ApiObject or primery key
+    * @param boolean $persist If TRUE the action is persisted on server side
+    * @return void
+    */
+    public function remove($object, $persist = false)
     {
         $this->initialize();
 
         if ($this->exists($object)) {
             $id = $this->obtainIdFrom($object);
             $object = $this->get($id);
-            $object->remove();
+
+            if ($persist) {
+                $object->remove();
+            }
 
             unset($this->_objects[$id]);
             // Clear invalid page mappings
             array_slice($this->_pages, $this->getPageOf($id));
+
+            return $object;
         }
+
+        return null;
     }
 
-    public function removeByIndex($index)
+    /**
+    * Removes an object from the collection and PERSIST the action on server side.
+    * Returns removed object.
+    *
+    * @param integer $index
+    * @param boolean $persist If TRUE the action is persisted on server side
+    * @return ApiObject | null
+    */
+    public function removeByIndex($index, $persist = false)
     {
         $this->initialize();
 
-        $this->remove($this->getByIndex($offset));
+        return $this->remove($this->getByIndex($offset), $persist);
     }
 
+    /**
+    * Saves all new objects attached to the collection or modified
+    * It clears the collection status and forces everything to be reloaded (when needed).
+    *
+    * @return void
+    */
     public function save()
     {
         $this->initialize();
