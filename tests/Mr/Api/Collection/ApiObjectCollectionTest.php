@@ -149,13 +149,16 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->_collection->isInitialized());
         $this->assertTrue($this->_collection->isObjectLoadedMockProperty($firstObject->getId()));
         $this->assertTrue($this->_collection->isPageLoadedMockProperty(1));
-        $this->assertEquals(3, $this->_collection->count());
+        $this->assertCount(3, $this->_collection);
         // Not fully loaded yet
         $this->assertFalse($this->_collection->isFullyLoadedMockProperty());
 
         $this->assertInternalType(\PHPUnit_Framework_Constraint_IsType::TYPE_ARRAY, $objects);
         // Check metadata
-        $this->assertEquals($metadataData, $this->_collection->getMetadataMockProperty());
+        $collectionMetadata = $this->_collection->getMetadataMockProperty();
+        ksort($metadataData);
+        ksort($collectionMetadata);
+        $this->assertEquals($metadataData, $collectionMetadata);
         // Check object count per page, it should be same as page limit
         $this->assertEquals(count($objects), $metadataData['limit']);
         // Check entity returned type
@@ -207,7 +210,7 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInternalType(\PHPUnit_Framework_Constraint_IsType::TYPE_ARRAY, $objects);
         // Check object count, should be the same as items left in data -> 1 (for second page)
-        $this->assertEquals(count($objects), 1);
+        $this->assertCount(1, $objects);
         // Check entity returned type again
         $this->assertInstanceOf(self::MODEL_NAMESPACE . 'Channel', $objects[0]);
 
@@ -229,9 +232,12 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->_collection->isAnyObjectLoaded());
         $this->assertEquals(3, $this->_collection->count());
 
+        // Check metadata
         $metadataData = $this->page1ObjectsData['meta'];
-        // Metadata persist
-        $this->assertEquals($metadataData, $this->_collection->getMetadataMockProperty());
+        $collectionMetadata = $this->_collection->getMetadataMockProperty();
+        ksort($metadataData);
+        ksort($collectionMetadata);
+        $this->assertEquals($metadataData, $collectionMetadata);
 
         // Objects can be reloaded (from second mock response)
         $this->_collection->setCurrentPage(2);
@@ -245,7 +251,7 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $objArray = $this->_collection->toArray();
 
         // Objects were returned
-        $this->assertEquals(3, count($objArray));
+        $this->assertCount(3, $objArray);
         $this->assertTrue($this->_collection->isFullyLoadedMockProperty());
     }
 
