@@ -31,6 +31,13 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
         }
     }
 
+    /**
+    * If the collection is not initialized already, this method
+    * loads current page of elements in order to obtain metadata information
+    * for first time.
+    *
+    * @return void
+    */
     protected function initialize()
     {
         if (!$this->_isInitialized) {
@@ -39,12 +46,17 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
         }
     }
 
-    protected function validateObject($object) 
+    /**
+    * Check if the given object is a valid ApiObject for this collection, 
+    * taking into account the model of the repository attached.
+    * Returns the actual given object
+    *
+    * @throws InvalidRepositoryException
+    * @param ApiObject $object
+    * @return ApiObject $object
+    */
+    protected function validateObject(ApiObject $object) 
     {
-        if ($object instanceof Mr\Api\Model\ApiObject) {
-            throw new InvalidTypeException('Mr\\Api\\Model\\ApiObject', $object);
-        }
-
         if ($object->getModel() != $this->_repository->getModel()) {
             throw new InvalidRepositoryException();
         }
@@ -77,21 +89,49 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
         );
     }
 
+    /**
+    * Checks if an object is already loaded by its given primary key.
+    * Returns TRUE if object is loaded.
+    *
+    * @param mixed $id
+    * @return boolean
+    */
     protected function isItemLoaded($id)
     {
         return array_key_exists($id, $this->_objects);
     }
 
+    /**
+    * Checks if a page is already loaded by its given index.
+    * Returns TRUE if page is loaded.
+    *
+    * @param integer $page
+    * @return boolean
+    */
     protected function isPageLoaded($page)
     {
         return array_key_exists($page, $this->_pages);
     }
 
+    /**
+    * Checks if all objects have been loaded already.
+    * Returns TRUE all objects are loaded.
+    *
+    * @return boolean
+    */
     protected function isFullyLoaded()
     {
         return count($this->_objects) == $this->_total;
     }
 
+    /**
+    * Checks if received metadata is equal to the one stored.
+    * If metadata data are different the collection gets cleared unless
+    * it has not been initialized yet.
+    *
+    * @param array $metadata Metadata returned by the server to compare to
+    * @return boolean
+    */
     protected function isMetadataUpToDate($metadata) 
     {
         $currentMetadata = $this->getMetadata();
@@ -110,7 +150,15 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
         return true;
     }
 
-    protected function load($page = null)
+    /**
+    * Loads from repository the set of objects that belongs to the given page.
+    * If none page is given the it uses the current page.
+    * If the page is already loaded this method does nothing.
+    *
+    * @param integer page
+    * @return void
+    */
+    protected function load($page = 0)
     {
         $page = $page ? $page : $this->_page;
 
@@ -140,6 +188,11 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
         }
     }
 
+    /**
+    * Loads all objects from all pages making iterative single page loads.
+    *
+    * @return void
+    */
     protected function loadAll()
     {
         $this->setCurrentPage(1);
@@ -288,7 +341,7 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
     public function updateByIndex($index, ApiObject $object)
     {
         $this->validateObject($object);
-        
+
         if ($internalObj = $this->getByIndex($index)) {
             $internalObj->updateData($object->getData());
         }
