@@ -203,7 +203,7 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
         }
     }
 
-    protected function getId($object) 
+    protected function obtainIdFrom($object) 
     {
         return $id = is_object($object) && $this->validateObject($object) ? $object->getId() : $object;
     }
@@ -229,7 +229,7 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
 
     public function getIndexOf($object)
     {
-        $id = $this->getId($object);
+        $id = $this->obtainIdFrom($object);
 
         return array_search($this->getIds(), $id);
     }
@@ -354,7 +354,7 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
 
     public function exists($object)
     {
-        $id = $this->getId($object);
+        $id = $this->obtainIdFrom($object);
 
         if ($this->isItemLoaded($id)) {
             return true;
@@ -393,7 +393,7 @@ class ApiObjectCollection implements ApiObjectCollectionInterface
     public function remove($object)
     {
         if ($this->exists($object)) {
-            $id = $this->getId($object);
+            $id = $this->obtainIdFrom($object);
             $object = $this->get($id);
             $object->remove();
 
