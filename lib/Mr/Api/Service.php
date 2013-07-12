@@ -42,6 +42,11 @@ class Service
         $this->_client = new Client(self::API_HOST, $appId, $secret);
     }
 
+    public function getClient()
+    {
+        return $this->_client;
+    }
+
     protected function getRepository($model)
     {
         $repoName = self::REPO_NAMESPACE . $model . 'Repository';
