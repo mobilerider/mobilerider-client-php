@@ -69,7 +69,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     protected function validateIndex($index)
     {
-        return 0 <= $index && ($this->_total - 1) >= $index;
+        return 0 <= $index && ($this->count() - 1) >= $index;
     }
 
     /**
@@ -119,7 +119,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     */
     protected function isFullyLoaded()
     {
-        return $this->_isInitialized && count($this->_objects) == $this->_total;
+        return $this->_isInitialized && count($this->_objects) >= $this->_total;
     }
 
     /**
@@ -138,9 +138,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
             $currentMetadata['pages'] != $metadata['pages'] ||
             $currentMetadata['limit'] != $metadata['limit']) {
 
-            $this->_total = $metadata['total'];
-            $this->_pageTotal = $metadata['pages'];
-            $this->_limit = $metadata['limit'];
+            $this->_total = isset($metadata['total']) ? $metadata['total'] : $this->_total;
+            $this->_limit = isset($metadata['limit']) ? $metadata['limit'] : $this->_limit;
+            $this->_pageTotal = isset($metadata['pages']) ? $metadata['pages'] : $this->_pageTotal;
 
             return !$this->_isInitialized;
         }
@@ -196,10 +196,12 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     protected function loadAll()
     {
         $this->setCurrentPage(1);
+        $count = 0;
 
-        while (!$this->isFullyLoaded()) {
+        while (!$this->isFullyLoaded() && $count < $this->_pages) {
             $this->load();
             $this->increasePage();
+            $count++;
         }
     }
 
@@ -236,6 +238,10 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function getIds()
     {
+        $this->initialize();
+
+        $this->loadAll();
+
         return array_keys($this->_objects);
     }
 
@@ -293,6 +299,8 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function update(ApiObject $object)
     {
+        $this->initialize();
+
         $this->validateObject($object);
 
         if ($internalObj = $this->get($object->getId())) {
@@ -302,6 +310,8 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function updateByIndex($index, ApiObject $object)
     {
+        $this->initialize();
+
         $this->validateObject($object);
 
         if ($internalObj = $this->getByIndex($index)) {
@@ -311,6 +321,8 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function exists($object)
     {
+        $this->initialize();
+
         $id = $this->obtainIdFrom($object);
 
         if ($this->isObjectLoaded($id)) {
@@ -347,6 +359,8 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function remove($object)
     {
+        $this->initialize();
+
         if ($this->exists($object)) {
             $id = $this->obtainIdFrom($object);
             $object = $this->get($id);
@@ -360,11 +374,15 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function removeByIndex($index)
     {
+        $this->initialize();
+
         $this->remove($this->getByIndex($offset));
     }
 
     public function save()
     {
+        $this->initialize();
+
         $modifiedObjects = array();
 
         // Check for modified objects inside the collection
@@ -391,7 +409,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function count() 
     {
-        return $this->_total;
+        $this->initialize();
+
+        return $this->_total ? $this->_total : count($this->_objects);
     }
 
     /**
