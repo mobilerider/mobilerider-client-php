@@ -53,6 +53,11 @@ abstract class ApiObject
         $this->_isModified = false;
     }
 
+    public function getRepository()
+    {
+        return $this->_repo;
+    }
+
     /**
     * Returns current model name, eg: Media
     *
@@ -138,7 +143,8 @@ abstract class ApiObject
     * Data parameter needs to be an object or an array, otherwise 
     * an exception is thrown.
     *
-    * @param $data mixed
+    * @throws InvalidFormatException
+    * @param object | array $data
     */
     public function setData($data)
     {
@@ -149,10 +155,32 @@ abstract class ApiObject
         } else if (is_array($data)) {
             $this->_data = array_merge($this->_data, $data);
         } else {
-            throw new \Exception("Invalid data format");
+            throw new InvalidFormatException();
         }
 
         $this->_isModified = true;
+    }
+
+    /**
+    * Sets given data as part of this object field values.
+    * Except primary key field.
+    * Data parameter needs to be an object or an array, otherwise 
+    * an exception is thrown.
+    *
+    * @throws InvalidFormatException
+    * @param object | array $data
+    */
+    public function updateData($data)
+    {
+        if (is_object($data)) {
+            unset($data->{$this->getKeyField()});
+        } else if (is_array($data)) {
+            unset($data[$this->getKeyField()]);
+        } else {
+            throw new InvalidFormatException();
+        }
+
+        $this->setData($data);
     }
 
     public function validate()
