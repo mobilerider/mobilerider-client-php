@@ -501,7 +501,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     {
         $this->initialize();
 
-        return $this->remove($this->getByIndex($offset), $persist);
+        return $this->remove($this->getByIndex($index), $persist);
     }
 
     /**
