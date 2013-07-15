@@ -50,6 +50,11 @@ class ApiObjectCollectionMock extends ApiObjectCollection
     {
         return $this->getMetadata();
     }
+
+    public function getDirtyObjects()
+    {
+        return $this->_dirtyObjects;
+    }
 };
 
 class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
@@ -265,6 +270,57 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->_collection->isPageLoadedMockProperty(2));
     }
 
+    public function testCollectionObjectChanges()
+    {
+        // Updates object with ID 1
+        $this->_collection->update(array('name' => 'Updated'), 1);
+        $object = $this->_collection->get(1);
+        $this->assertEquals('Updated', $object->name);
+        // Only updated object page should be loaded
+        $this->assertFalse($this->_collection->isFullyLoadedMockProperty());
+
+        // Updates all objects
+        $this->_collection->update(array('name' => 'Updated'));
+        foreach ($this->_collection as $object) {
+            $this->assertEquals('Updated', $object->name);
+            $this->assertTrue($object->isModified());
+        }
+        // Only updated object page should be loaded
+        $this->assertTrue($this->_collection->isFullyLoadedMockProperty());
+
+        // Empty response to satisfy save request
+        $this->_clientMockAdapter->clear();
+        $this->_clientMockAdapter->addResponseBy();
+        $this->_collection->save();
+        // All objects should be saved
+        foreach ($this->_collection as $object) {
+            $this->assertFalse($object->isNew());
+            $this->assertFalse($object->isModified());
+        }
+
+        $dataObject = $this->page1ObjectsData['objects'][0];
+
+        $this->_clientMockAdapter->addResponseBy(Response::STATUS_OK, 'api/channel', json_encode(array(
+            'status' => 'ok',
+            'object' => $dataObject
+        )));
+
+        // Adding new object
+        $this->_collection->add($this->_repository->create());
+        $this->assertCount(1, $this->_collection->getDirtyObjects());
+        $this->_collection->save();
+        $this->assertCount(0, $this->_collection->getDirtyObjects());
+        // After saving a new object collection needs to be cleared
+        $this->assertFalse($this->_collection->isAnyObjectLoaded());
+
+        // Adds initial objects mock data for collection reload
+        $this->_clientMockAdapter->clear();
+        $this->addMockResponses();
+        // Forces full reload
+        $this->_collection->toArray();
+        $this->assertTrue($this->_collection->isFullyLoadedMockProperty());
+    }
+
     public function testToArrayForFullLoad()
     {
         $objArray = $this->_collection->toArray();
@@ -281,6 +337,23 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue(isset($this->_collection[0]));
         $this->assertEquals($this->_collection[0], $firstObject);
+        $this->assertFalse($this->_collection->isFullyLoadedMockProperty());
 
+        // Updates object by index using data
+        $this->_collection[0] = array('name' => 'Updated');
+        $object = $this->_collection->get(1);
+        $this->assertEquals('Updated', $object->name);
+
+        // Updates object by index using another object
+        $secondObject = $this->_collection[1];
+        $this->_collection[0] = $secondObject;
+        $object = $this->_collection->getByIndex(0); //$firstObject
+        $this->assertEquals($secondObject->name, $object->name);
+
+        // Force full load
+        $this->_collection->toArray();
+        unset($this->_collection[0]);
+        // After remove an object, page mappings should be cleared
+        $this->assertFalse($this->_collection->isPageLoadedMockProperty(1));
     }
 }
