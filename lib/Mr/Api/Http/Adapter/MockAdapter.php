@@ -32,4 +32,14 @@ class MockAdapter extends \HTTP_Request2_Adapter_Mock implements ClientAdapterIn
     {
         $this->addResponse(new \HTTP_Request2_Exception("Server Mock Response Exception!"));
     }
+
+    /**
+    * Deletes all mock responses attached to the adapter
+    *
+    * @return void
+    */
+    public function clear()
+    {
+        $this->responses = array();
+    }
 }
