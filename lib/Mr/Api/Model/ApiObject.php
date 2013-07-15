@@ -144,10 +144,14 @@ abstract class ApiObject
     * an exception is thrown.
     *
     * @throws InvalidFormatException
-    * @param object | array $data
+    * @param ApiObject | object | array $data
     */
     public function setData($data)
     {
+        if ($data instanceof ApiObject) {
+            $data = $data->getData();
+        }
+
         if (is_object($data)) {
             foreach (get_object_vars($data) as $name => $value) {
                 $this->{$name} = $value;
@@ -168,11 +172,13 @@ abstract class ApiObject
     * an exception is thrown.
     *
     * @throws InvalidFormatException
-    * @param object | array $data
+    * @param ApiObject | object | array $data
     */
     public function updateData($data)
     {
-        if (is_object($data)) {
+        if ($data instanceof ApiObject) {
+            $data = $data->getData();
+        } else if (is_object($data)) {
             $data = get_object_vars($data);
         }
 

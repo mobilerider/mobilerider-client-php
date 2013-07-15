@@ -348,20 +348,34 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     }
 
     /**
-    * Updates object data with the data of another given object.
-    * Returns TRUE if the object was found.
+    * Updates objects data with the data provided from an associative array or another object.
+    * If an object is given, only the similar stored object is updated.
+    * Returns TRUE if the object(s) was updated
     *
-    * @param ApiObject $object
+    * @param ApiObject | array $data
+    * @param mixed $object
     * @return boolean
     */
-    public function update(ApiObject $object)
+    public function update($data, $object = null)
     {
         $this->initialize();
 
-        $this->validateObject($object);
+        if (!empty($object)) {
+            $id = $this->obtainIdFrom($object);
 
-        if ($internalObj = $this->get($object->getId())) {
-            $internalObj->updateData($object->getData());
+            if ($internalObj = $this->get($id)) {
+                $internalObj->updateData($data);
+
+                return true;
+            }
+
+        } else {
+            $this->loadAll();
+
+            foreach ($this->_objects as $internalObj) {
+                $internalObj->updateData($data);
+            }
+
             return true;
         }
 
@@ -369,21 +383,19 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     }
 
     /**
-    * Updates object data with the data of another given object.
-    * Returns TRUE if the object was found.
+    * Updates objects data with the data provided from an associative array or another object.
+    * Returns TRUE if the object was found by given index.
     *
     * @param integer $index
-    * @param ApiObject $object
+    * @param ApiObject | array $data
     * @return boolean
     */
-    public function updateByIndex($index, ApiObject $object)
+    public function updateByIndex($index, $data)
     {
         $this->initialize();
 
-        $this->validateObject($object);
-
         if ($internalObj = $this->getByIndex($index)) {
-            $internalObj->updateData($object->getData());
+            $internalObj->updateData($data);
         }
     }
 
