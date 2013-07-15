@@ -173,8 +173,10 @@ abstract class ApiObject
     public function updateData($data)
     {
         if (is_object($data)) {
-            unset($data->{$this->getKeyField()});
-        } else if (is_array($data)) {
+            $data = get_object_vars($data);
+        }
+
+        if (is_array($data)) {
             unset($data[$this->getKeyField()]);
         } else {
             throw new InvalidFormatException();
