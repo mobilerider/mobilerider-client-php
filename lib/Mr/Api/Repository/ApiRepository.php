@@ -13,6 +13,7 @@ use Mr\Api\ClientInterface;
 use Mr\Api\AbstractClient;
 
 // Exceptions
+use Mr\Exception\MrException;
 use Mr\Exception\ServerErrorException;
 use Mr\Exception\InvalidResponseException;
 use Mr\Exception\DeniedEntityAccessException;
@@ -182,8 +183,9 @@ abstract class ApiRepository
     */
     public function get($id)
     {
-        if (!$id || !is_numeric($id))
-            throw new Exception("Invalid Id");
+        if (!$id || !is_numeric($id)) {
+            throw new MrException("Invalid Id");
+        }
 
         $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $id);
         
