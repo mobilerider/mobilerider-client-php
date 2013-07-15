@@ -16,6 +16,7 @@ use Mr\Api\AbstractClient;
 use Mr\Exception\ServerErrorException;
 use Mr\Exception\InvalidResponseException;
 use Mr\Exception\DeniedEntityAccessException;
+use Mr\Exception\MissingResponseAttributesException;
 
 /** 
  * ApiRepository Class file
@@ -97,6 +98,12 @@ abstract class ApiRepository
     */
     protected function validateResponse($response)
     {
+        $responseAttrs = get_object_vars($response);
+
+        if (!array_key_exists('status', $responseAttrs)) {
+            throw new MissingResponseAttributesException(array('status'));
+        }        
+
         $success = is_object($response) && (
             self::STATUS_OK == $response->status ||
             // Avoid throwing exception if the entity was not found, instead return null
@@ -113,6 +120,10 @@ abstract class ApiRepository
             } else {
                 throw new InvalidResponseException();
             }
+        }
+
+        if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
+            throw new MissingResponseAttributesException(array('object(s)'));
         }
 
         return $success;
@@ -240,39 +251,104 @@ abstract class ApiRepository
         $object->afterDelete();
     }
 
+    protected function preSave($object)
+    {
+        $new = array();
+        $modified = array();
+
+        if (empty($object)) {
+            throw new InvalidDataOperationException('Object is empty', 'Save object');
+        }
+
+        $objects = !is_array($object) && !($object instanceof ApiObjectCollection) ? array($object) : $object;
+
+        foreach ($objects as $object) {
+            if (ApiObject::STATUS_VALID != ($msg = $object->validate())) {
+                throw new InvalidDataOperationException($msg, 'Save object');
+            }
+
+            $object->beforeSave();
+
+            if ($object->isNew()) {
+                $new[] = $object;
+            } else {
+                $modified[] = $object;
+            }
+        }    
+
+        return array($new, $modified);
+    }
+
+    protected function getRequestParams(array $objects)
+    {
+        if (count($objects) == 1) {
+            $object = $objects[0];
+            $data = $object->getData();
+        } else {
+            foreach ($objects as $object) {
+                $data[] = $object->getData();
+            }
+        }
+
+        return array('JSON' => $data);
+    }
+
+    protected function postSave($response, $object, $method)
+    {
+        if ($method == AbstractClient::METHOD_POST) {
+            $this->validateResponse($response);
+            $data = isset($response->objects) ? $response->objects : $response->object;
+            $data = !is_array($data) ? array($data) : $data;
+        }
+
+        $objects = !is_array($object) ? array($object) : $object;
+
+        foreach ($objects as $key => $object) {
+
+            if ($object->isNew()) {
+                // New object waiting for returned data
+                // Data list is assumed to have same order than local objects
+                $object->saved($data[$key]);
+            } else {
+                $object->saved();
+            }
+
+            $object->afterSave();
+        }
+    }
+
     /**
-    * Saves given model object.
+    * Saves given model object or list of objects.
     *
     * @throws InvalidDataOperationException
     *
-    * @param $object Mr\Api\Model\ApiObject
+    * @param ApiObject | ApiObjectCollection | array $object
     * @return void
     */
-    public function save(ApiObject $object)
+    public function save($object)
     {
-        if (ApiObject::STATUS_VALID != ($msg = $object->validate())) {
-            throw new InvalidDataOperationException($msg, 'Save object');
-        }
+        list($new, $modified) = $this->preSave($object);
 
-        $object->beforeSave();
-
-        if ($object->isNew()) {
-            $method = AbstractClient::METHOD_POST;
+        if (!empty($new)) {
             $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-        } else {
-            $method = AbstractClient::METHOD_PUT;
-            $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
+            $params = $this->getRequestParams($new);
+            $response = $this->_client->post($path, $params);
+
+            $this->postSave($response, $new, AbstractClient::METHOD_POST);
         }
 
-        $params = array('JSON' => $object->getData());
-        $response = $this->_client->request($method, $path, $params);
+        if (!empty($modified)) {
+            if (count($modified) == 1) {
+                $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
+            } else {
+                $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
+            }
 
-        if ($object->isNew() && $this->validateResponse($response)) {
-            $object->saved($response->object);
-        } else {
-            $object->saved();
+            $params = $this->getRequestParams($modified);
+            $response = $this->_client->put($path, $params);
+
+            $this->postSave($response, $modified, AbstractClient::METHOD_PUT);
         }
-
-        $object->afterSave();
+        
     }
 }
