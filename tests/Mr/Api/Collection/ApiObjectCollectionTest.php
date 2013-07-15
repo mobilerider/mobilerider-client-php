@@ -191,6 +191,25 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($returnedObject, $firstObject);
     }
 
+    public function testPaginator()
+    {
+        $this->_collection->setCurrentPage(2);
+        $this->assertEquals(2, $this->_collection->getCurrentPage());
+        $this->assertTrue($this->_collection->hasPreviousPage());
+        $this->assertFalse($this->_collection->hasNextPage());
+
+        $this->_collection->setCurrentPage(1);
+        $this->assertEquals(1, $this->_collection->getCurrentPage());
+        $this->assertFalse($this->_collection->hasPreviousPage());
+        $this->assertTrue($this->_collection->hasNextPage());
+
+        $this->_collection->increasePage();
+        $this->assertEquals(2, $this->_collection->getCurrentPage());
+
+        $this->_collection->decreasePage();
+        $this->assertEquals(1, $this->_collection->getCurrentPage());
+    }
+
     public function testSecondPageLoad()
     {
         $metadataData = $this->page1ObjectsData['meta'];
