@@ -469,7 +469,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
             unset($this->_objects[$id]);
             // Clear invalid page mappings
-            array_slice($this->_pages, $this->getPageOf($id));
+            $this->_pages = array();
 
             return $object;
         }
