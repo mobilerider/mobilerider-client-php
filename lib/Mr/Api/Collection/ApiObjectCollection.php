@@ -69,7 +69,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     protected function validateIndex($index)
     {
-        return 0 <= $index && ($this->count() - 1) >= $index;
+        return 0 <= $index && $this->count() > $index;
     }
 
     /**
@@ -108,7 +108,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     */
     protected function isPageLoaded($page)
     {
-        return $this->_isInitialized && array_key_exists($page, $this->_pages);
+        return $this->_isInitialized && array_key_exists(((int)$page - 1), $this->_pages);
     }
 
     /**
@@ -120,6 +120,17 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     protected function isFullyLoaded()
     {
         return $this->_isInitialized && count($this->_objects) >= $this->_total;
+    }
+
+    /**
+    * Checks if an object index has been loaded already.
+    * Returns TRUE if the index is loaded.
+    *
+    * @return boolean
+    */
+    protected function isIndexLoaded($index)
+    {
+        return $this->_isInitialized && $this->isPageLoaded($this->getPageByIndex($index));
     }
 
     /**
@@ -138,9 +149,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
             $currentMetadata['pages'] != $metadata['pages'] ||
             $currentMetadata['limit'] != $metadata['limit']) {
 
-            $this->_total = isset($metadata['total']) ? $metadata['total'] : $this->_total;
-            $this->_limit = isset($metadata['limit']) ? $metadata['limit'] : $this->_limit;
-            $this->_pageTotal = isset($metadata['pages']) ? $metadata['pages'] : $this->_pageTotal;
+            $this->_total = isset($metadata['total']) ? (int)$metadata['total'] : $this->_total;
+            $this->_limit = isset($metadata['limit']) ? (int)$metadata['limit'] : $this->_limit;
+            $this->_pageTotal = isset($metadata['pages']) ? (int)$metadata['pages'] : $this->_pageTotal;
 
             return !$this->_isInitialized;
         }
@@ -159,6 +170,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     protected function load($page = 0)
     {
         $page = $page ? $this->validatePage($page) : $this->_page;
+        $pageIndex = (int)$page - 1;
 
         if (!$this->isPageLoaded($page)) {
             $metadata = $this->getMetadata();
@@ -173,19 +185,19 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
                 $this->clear();
             }
 
-            $this->_pages[$this->_page] = array();
+            $this->_pages[$pageIndex] = array();
 
             foreach ($objects as $object) {
                 if ($this->validateObject($object)) {
                     // Add object object by primery key
                     $this->_objects[$object->getId()] = $object;
                     // Add object object to its page
-                    $this->_pages[$page][] = $object;
+                    $this->_pages[$pageIndex][] = $object;
                 }
             }
         }
 
-        return $this->_pages[$page];
+        return $this->_pages[$pageIndex];
     }
 
     /**
@@ -214,6 +226,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     {
         $id = $this->obtainIdFrom($object);
 
+        //@TODO: Avoid full load here by using getIds. Use smarter method.
         return array_search($this->getIds(), $id);
     }
 
@@ -224,7 +237,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
     public function getPageByIndex($index)
     {
-        return floor($index / $this->_limit);
+        return $index ? ceil($index / $this->_limit) : 1;
     }
 
      /**
@@ -240,13 +253,16 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     * Returns a list of ids from all objects
     * This method forces a massive load of all objects
     *
+    * @param boolean $onlyLoaded If TRUE returns only ids from those already loaded objects
     * @return array
     */
-    public function getIds()
+    public function getIds($onlyLoaded = false)
     {
         $this->initialize();
 
-        $this->loadAll();
+        if (!$onlyLoaded) {
+            $this->loadAll();
+        }
 
         return array_keys($this->_objects);
     }
@@ -261,19 +277,15 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     public function getByIndex($index)
     {
         if ($this->validateIndex($index)) {
-            $ids = $this->getIds();
+            $page = $this->getPageByIndex($index);
 
-            // Check if the object is loaded, 
-            // if NOT load the page that contains it
-            if (!isset($ids[$index])) {
-                $page = $this->getPageByIndex($index);
+            if (!$this->isIndexLoaded($index)) {
                 $this->load($page);
-                $ids = $this->getIds();
             }
-
-            $id = $ids[$index];
-
-            return $this->get($id);
+            // Gets objects from requested page
+            $objects = $this->_pages[$page - 1];
+            // return object from computed offset
+            return $objects[$index - (($page - 1) * $this->_limit)];
         } 
 
         return null;
