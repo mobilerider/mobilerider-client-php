@@ -1,10 +1,11 @@
-<?php 
+<?php
 
 namespace Mr\Api\Model;
 
 use Mr\Exception\InvalidRepositoryException;
+use Mr\Exception\InvalidFormatException;
 
-/** 
+/**
  * ApiObject Class file
  *
  * PHP Version 5.3
@@ -140,7 +141,7 @@ abstract class ApiObject
 
     /**
     * Sets given data as part of this object field values.
-    * Data parameter needs to be an object or an array, otherwise 
+    * Data parameter needs to be an object or an array, otherwise
     * an exception is thrown.
     *
     * @throws InvalidFormatException
@@ -168,7 +169,7 @@ abstract class ApiObject
     /**
     * Sets given data as part of this object field values.
     * Except primary key field.
-    * Data parameter needs to be an object or an array, otherwise 
+    * Data parameter needs to be an object or an array, otherwise
     * an exception is thrown.
     *
     * @throws InvalidFormatException
@@ -224,7 +225,7 @@ abstract class ApiObject
         if (!$this->_repo) {
             throw new InvalidRepositoryException();
         }
-        
+
         $this->_repo->save($this);
     }
 
@@ -266,7 +267,7 @@ abstract class ApiObject
     {
         $name = strtolower($name);
         $oldValue = $this->{$name};
-        
+
         if ($modified = $oldValue !== $value) {
             $this->_data[$name] = $value;
         }
@@ -275,7 +276,7 @@ abstract class ApiObject
     }
 
     /**
-     * <b>Magic method</b>. Checks if property exists 
+     * <b>Magic method</b>. Checks if property exists
      *
      * @param string $name property name
      *
