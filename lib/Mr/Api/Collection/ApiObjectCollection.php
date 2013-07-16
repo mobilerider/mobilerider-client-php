@@ -7,6 +7,7 @@ use Mr\Api\Model\ApiObject;
 
 // Exceptions
 use Mr\Exception\InvalidTypeException;
+use Mr\Exception\InvalidRepositoryException;
 
 class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollectionInterface
 {
