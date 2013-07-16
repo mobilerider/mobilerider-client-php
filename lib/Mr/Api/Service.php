@@ -3,6 +3,8 @@
 namespace Mr\Api;
 
 use Mr\Api\Http\Client;
+use Mr\Api\Collection\ApiObjectCollection;
+use Mr\Api\Model\ApiObject;
 
 /** 
  * Service Class file
@@ -93,5 +95,27 @@ class Service
         $repo = $this->getRepository($model);
 
         return $repo->getAll();
+    }
+
+    /**
+    * Saves given model object or list of objects.
+    *
+    * @param ApiObject | ApiObjectCollection | array $object
+    * @return array
+    */
+    public function save($object)
+    {
+        if ((is_array($object) || $object instanceof ApiObjectCollection) && count($object)) {
+            $firstObject = $object[0];
+            $model = $firstObject->getModel();
+        } else if ($object instanceof ApiObject) {
+            $model = $object->getModel();
+        } else {
+            throw new InvalidDataOperationException('Invalid object type or empty data', 'Service Save object');
+        }
+
+        $repo = $this->getRepository($model);
+
+        return $repo->save($object);
     }
 }

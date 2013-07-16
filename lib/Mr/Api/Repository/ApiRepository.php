@@ -5,14 +5,19 @@ namespace Mr\Api\Repository;
 // Model
 use Mr\Api\Model\ApiObject;
 
+// Collection
+use Mr\Api\Collection\ApiObjectCollection;
+
 // Client
 use Mr\Api\ClientInterface;
 use Mr\Api\AbstractClient;
 
 // Exceptions
+use Mr\Exception\MrException;
 use Mr\Exception\ServerErrorException;
 use Mr\Exception\InvalidResponseException;
 use Mr\Exception\DeniedEntityAccessException;
+use Mr\Exception\MissingResponseAttributesException;
 
 /** 
  * ApiRepository Class file
@@ -50,6 +55,15 @@ abstract class ApiRepository
     * var ClientInterface
     */
     protected $_client;
+    protected $_metadataDefaults = array(
+        'total' => 0,
+        'pages' => 0,
+        'page' => 1,
+        'limit' => 20
+    );
+    protected $_filterDefaults = array(
+        'page' => 1
+    );
 
     /**
     * Constructor
@@ -85,6 +99,12 @@ abstract class ApiRepository
     */
     protected function validateResponse($response)
     {
+        $responseAttrs = get_object_vars($response);
+
+        if (!array_key_exists('status', $responseAttrs)) {
+            throw new MissingResponseAttributesException(array('status'));
+        }        
+
         $success = is_object($response) && (
             self::STATUS_OK == $response->status ||
             // Avoid throwing exception if the entity was not found, instead return null
@@ -103,7 +123,43 @@ abstract class ApiRepository
             }
         }
 
+        if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
+            throw new MissingResponseAttributesException(array('object(s)'));
+        }
+
         return $success;
+    }
+
+    protected function validateMetadata($response)
+    {
+        // Check for metadata to exists
+        $metadata = isset($response->meta) ? get_object_vars($response->meta) : array();
+        // Use metadata defaults
+        return array_merge($this->_metadataDefaults, $metadata);
+    }
+
+    /**
+    * Checks if the set of filters given are allowed by the server methods
+    *
+    * @throws InvalidFiltersException
+    * @param array $filters
+    * @return array $filters
+    */
+    protected function validateFilters($filters)
+    {
+        $filters = !empty($filters) ? $filters : array();
+        $filters = is_array($filters) ? $filters : array($filters);
+        $filters = array_merge($this->_filterDefaults, $filters);
+        
+        $diff = array_diff_key($this->_filterDefaults, $filters);
+
+        if (!empty($diff)) {
+            throw new InvalidFiltersException($diff, $array_keys($this->_filterDefaults));
+        }
+
+        //@TODO: check the type filters
+
+        return $filters;
     }
 
     /**
@@ -127,8 +183,9 @@ abstract class ApiRepository
     */
     public function get($id)
     {
-        if (!$id || !is_numeric($id))
-            throw new Exception("Invalid Id");
+        if (!$id || !is_numeric($id)) {
+            throw new MrException("Invalid Id");
+        }
 
         $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $id);
         
@@ -142,24 +199,39 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns a all objects from this model. 
+    * Returns a all objects from this model.
     *
-    * @return array
+    * @param array | null $filters Filters for the server request, only page supported for now
+    * @param &array | null $metadata Variable to store objects metadata in
+    * @param boolean $lazy If TRUE this methods sends an inmediate request and returns the results 
+    *        from server otherwise none request is done yet and an ApiObjectCollection is returned
+    * @return ApiObjectCollection | array
     */
-    public function getAll()
+    public function getAll($filters = array(), &$metadata = null, $lazy = true)
     {
-        $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-        
-        $response = $this->_client->get($path);
-        $results = array();
+        //@TODO: Check metadata provided and lazy flag to avoid any chance of infinite loop
+        if (!$lazy) {
+            $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
+            
+            $response = $this->_client->get($path, $this->validateFilters($filters));
+            $results = array();
 
-        if ($this->validateResponse($response) && !empty($response->objects)) {
-            foreach ($response->objects as $object) {
-                $results[] = $this->create($object);
+            if ($metadata !== null && is_array($metadata)) {
+                $metadata = array_merge($metadata, $this->validateMetadata($response));
             }
+
+            if ($this->validateResponse($response) && !empty($response->objects)) {
+                foreach ($response->objects as $object) {
+                    $results[] = $this->create($object);
+                }
+            }
+
+            return $results;
         }
 
-        return $results;
+        $page = isset($filters['page']) ? $filters['page'] : $this->_metadataDefaults['page'];
+
+        return new ApiObjectCollection($this, $page);
     }
 
     /**
@@ -181,39 +253,104 @@ abstract class ApiRepository
         $object->afterDelete();
     }
 
+    protected function preSave($object)
+    {
+        $new = array();
+        $modified = array();
+
+        if (empty($object)) {
+            throw new InvalidDataOperationException('Object is empty', 'Save object');
+        }
+
+        $objects = !is_array($object) && !($object instanceof ApiObjectCollection) ? array($object) : $object;
+
+        foreach ($objects as $object) {
+            if (ApiObject::STATUS_VALID != ($msg = $object->validate())) {
+                throw new InvalidDataOperationException($msg, 'Save object');
+            }
+
+            $object->beforeSave();
+
+            if ($object->isNew()) {
+                $new[] = $object;
+            } else {
+                $modified[] = $object;
+            }
+        }    
+
+        return array($new, $modified);
+    }
+
+    protected function getRequestParams(array $objects)
+    {
+        if (count($objects) == 1) {
+            $object = $objects[0];
+            $data = $object->getData();
+        } else {
+            foreach ($objects as $object) {
+                $data[] = $object->getData();
+            }
+        }
+
+        return array('JSON' => $data);
+    }
+
+    protected function postSave($response, $object, $method)
+    {
+        if ($method == AbstractClient::METHOD_POST) {
+            $this->validateResponse($response);
+            $data = isset($response->objects) ? $response->objects : $response->object;
+            $data = !is_array($data) ? array($data) : $data;
+        }
+
+        $objects = !is_array($object) ? array($object) : $object;
+
+        foreach ($objects as $key => $object) {
+
+            if ($object->isNew()) {
+                // New object waiting for returned data
+                // Data list is assumed to have same order than local objects
+                $object->saved($data[$key]);
+            } else {
+                $object->saved();
+            }
+
+            $object->afterSave();
+        }
+    }
+
     /**
-    * Saves given model object.
+    * Saves given model object or list of objects.
     *
     * @throws InvalidDataOperationException
     *
-    * @param $object Mr\Api\Model\ApiObject
+    * @param ApiObject | ApiObjectCollection | array $object
     * @return void
     */
-    public function save(ApiObject $object)
+    public function save($object)
     {
-        if (ApiObject::STATUS_VALID != ($msg = $object->validate())) {
-            throw new InvalidDataOperationException($msg, 'Save object');
-        }
+        list($new, $modified) = $this->preSave($object);
 
-        $object->beforeSave();
-
-        if ($object->isNew()) {
-            $method = AbstractClient::METHOD_POST;
+        if (!empty($new)) {
             $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-        } else {
-            $method = AbstractClient::METHOD_PUT;
-            $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
+            $params = $this->getRequestParams($new);
+            $response = $this->_client->post($path, $params);
+
+            $this->postSave($response, $new, AbstractClient::METHOD_POST);
         }
 
-        $params = array('JSON' => $object->getData());
-        $response = $this->_client->request($method, $path, $params);
+        if (!empty($modified)) {
+            if (count($modified) == 1) {
+                $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
+            } else {
+                $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
+            }
 
-        if ($object->isNew() && $this->validateResponse($response)) {
-            $object->saved($response->object);
-        } else {
-            $object->saved();
+            $params = $this->getRequestParams($modified);
+            $response = $this->_client->put($path, $params);
+
+            $this->postSave($response, $modified, AbstractClient::METHOD_PUT);
         }
-
-        $object->afterSave();
+        
     }
 }
