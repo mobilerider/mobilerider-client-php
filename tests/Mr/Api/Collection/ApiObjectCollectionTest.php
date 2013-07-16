@@ -10,9 +10,14 @@ use Mr\Api\Http\Adapter\MockAdapter;
 // Repository
 use Mr\Api\Repository\ApiRepository;
 use Mr\Api\Repository\ChannelRepository;
+use Mr\Api\Repository\MediaRepository;
 
 // Collection
 use Mr\Api\Collection\ApiObjectCollection;
+use Mr\Api\Collection\ApiObjectIterator;
+
+// Exception
+use Mr\Exception\InvalidRepositoryException;
 
 class ApiObjectCollectionMock extends ApiObjectCollection
 {
@@ -41,6 +46,11 @@ class ApiObjectCollectionMock extends ApiObjectCollection
         return $this->isFullyLoaded();
     }
 
+    public function isIndexLoadedMockProperty($index)
+    {
+        return $this->isIndexLoaded($index);
+    }
+
     public function isAnyObjectLoaded()
     {
         return !empty($this->_objects) || !empty($this->_pages);
@@ -55,7 +65,30 @@ class ApiObjectCollectionMock extends ApiObjectCollection
     {
         return $this->_dirtyObjects;
     }
+
+    public function getIterator()
+    {
+        return new MockIterator($this);
+    }
 };
+
+class MockIterator extends ApiObjectIterator
+{
+    public function getCollectionMockProperty()
+    {
+        return $this->_collection;
+    }
+
+    public function getObjectsMockProperty()
+    {
+        return $this->_objects;
+    }
+
+    public function getCurrentIndexMockProperty()
+    {
+        return $this->_index;
+    }
+}
 
 class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
 {
@@ -103,13 +136,14 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
 
     protected $_collection;
     protected $_repository;
+    protected $_client;
 
     public function __construct()
     {
-        $client = new Client('anyhost', 'anyusername', 'anypassword');
+        $this->_client = new Client('anyhost', 'anyusername', 'anypassword');
         $this->_clientMockAdapter = new MockAdapter(); 
-        $client->setAdapter($this->_clientMockAdapter);
-        $this->_repository = new ChannelRepository($client);
+        $this->_client->setAdapter($this->_clientMockAdapter);
+        $this->_repository = new ChannelRepository($this->_client);
     }
 
     private function addMockResponses()
@@ -136,6 +170,7 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->_collection->isInitialized());
         $this->assertFalse($this->_collection->isObjectLoadedMockProperty(1));
         $this->assertFalse($this->_collection->isPageLoadedMockProperty(1));
+        $this->assertFalse($this->_collection->isIndexLoadedMockProperty(0));
         $this->assertFalse($this->_collection->isFullyLoadedMockProperty());
     }
 
@@ -154,6 +189,8 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->_collection->isInitialized());
         $this->assertTrue($this->_collection->isObjectLoadedMockProperty($firstObject->getId()));
         $this->assertTrue($this->_collection->isPageLoadedMockProperty(1));
+        $this->assertTrue($this->_collection->isIndexLoadedMockProperty(0));
+        $this->assertTrue($this->_collection->isIndexLoadedMockProperty(1));
         $this->assertCount(3, $this->_collection);
         // Not fully loaded yet
         $this->assertFalse($this->_collection->isFullyLoadedMockProperty());
@@ -228,6 +265,7 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->_collection->isInitialized());
         $this->assertTrue($this->_collection->isObjectLoadedMockProperty($thirdObject->getId()));
         $this->assertTrue($this->_collection->isPageLoadedMockProperty(2));
+        $this->assertTrue($this->_collection->isIndexLoadedMockProperty(2));
         // Now should be fully loaded
         $this->assertTrue($this->_collection->isFullyLoadedMockProperty());
         $this->assertEquals(3, $this->_collection->count());
@@ -253,6 +291,7 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->_collection->isInitialized());
         $this->assertFalse($this->_collection->isObjectLoadedMockProperty(1));
         $this->assertFalse($this->_collection->isPageLoadedMockProperty(1));
+        $this->assertFalse($this->_collection->isIndexLoadedMockProperty(0));
         $this->assertFalse($this->_collection->isAnyObjectLoaded());
         $this->assertEquals(3, $this->_collection->count());
 
@@ -328,6 +367,58 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
         // Objects were returned
         $this->assertCount(3, $objArray);
         $this->assertTrue($this->_collection->isFullyLoadedMockProperty());
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidRepositoryException
+     */
+    public function testRepositoryModelMatch()
+    {
+        $collection = new ApiObjectCollection(new MediaRepository($this->_client));
+        $collection->add($this->_repository->create());
+    }
+
+    public function testIterator()
+    {
+        $iterator = $this->_collection->getIterator();
+
+        $this->assertInstanceOf("Mr\Api\Collection\ApiObjectCollection", $iterator->getCollectionMockProperty());
+        $this->assertCount(0, $iterator->getObjectsMockProperty());
+        $this->assertEquals(0, $iterator->getCurrentIndexMockProperty());
+
+        $iterator->rewind();
+        // Loads first two objects from first page
+        $this->assertCount(2, $iterator->getObjectsMockProperty());
+        $this->assertEquals(0, $iterator->getCurrentIndexMockProperty());
+
+        $object = $iterator->current();
+        $this->assertInstanceOf("Mr\Api\Model\Channel", $object);
+        $this->assertEquals(0, $iterator->key());
+        $this->assertTrue($iterator->valid());
+        $this->assertEquals(1, $object->getId());
+
+        $iterator->next();
+        $object = $iterator->current();
+        $this->assertEquals(1, $iterator->key());
+        $this->assertTrue($iterator->valid());
+        $this->assertEquals(2, $object->getId());
+        $this->assertCount(2, $iterator->getObjectsMockProperty());
+        $this->assertEquals(1, $iterator->getCurrentIndexMockProperty());
+
+        $iterator->next();
+        $object = $iterator->current();
+        $this->assertEquals(2, $iterator->key());
+        $this->assertTrue($iterator->valid());
+        $this->assertEquals(3, $object->getId());
+        $this->assertCount(3, $iterator->getObjectsMockProperty());
+        $this->assertEquals(2, $iterator->getCurrentIndexMockProperty());
+
+        $iterator->next();
+        $this->assertFalse($iterator->valid());
+
+        // Deletes collection and objects references after becomes invalid (finish iteration)
+        $this->assertNull($iterator->getCollectionMockProperty());
+        $this->assertNull($iterator->getObjectsMockProperty());
     }
 
     public function testArrayAccess()
