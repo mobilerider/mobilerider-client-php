@@ -222,6 +222,13 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return $id = is_object($object) && $this->validateObject($object) ? $object->getId() : $object;
     }
 
+    /**
+    * Returns the index of a given object or primary key.
+    * This method foces a massive load of all objects.
+    *
+    * @param mixed $object
+    * @return integer
+    */
     public function getIndexOf($object)
     {
         $id = $this->obtainIdFrom($object);
@@ -230,20 +237,38 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         return array_search($this->getIds(), $id);
     }
 
+    /**
+    * Returns page number of the given object
+    * This method foces a massive load of all objects.
+    *
+    * @param mixed $object
+    * @return integer
+    */
     public function getPageOf($object)
     {
         return $this->getPageByIndex($this->getIndexOf($object));
     }
 
+    /**
+    * Returns the index of an object based on the given page number
+    *
+    * @param integer $index
+    * @return integer
+    */
     public function getPageByIndex($index)
     {
         return $index ? ceil($index / $this->_limit) : 1;
     }
 
-     /**
+    /**
     * Methods to satisfy the ApiObjectCollectionInterface Interface implementation
     */
 
+    /**
+    * Returns the name of the contained objects model.
+    *
+    * @return string
+    */
     public function getModel()
     {
         return $this->_repository->getModel();
