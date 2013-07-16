@@ -47,8 +47,8 @@ class ApiObjectIterator implements \Iterator
         $valid = isset($this->_objects[$this->_index]);
 
         if (!$valid) {
-            unset($this->_objects);
-            unset($this->_collection);
+            $this->_objects = null;
+            $this->_collection = null;
         }
 
         return $valid;
