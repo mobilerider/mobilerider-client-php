@@ -4,9 +4,9 @@ namespace Mr\Api\Collection;
 
 class ApiObjectIterator implements \Iterator
 {
-    private $_objects = array();
-    private $_index = 0;
-    private $_collection;
+    protected $_objects = array();
+    protected $_index = 0;
+    protected $_collection;
 
     public function __construct(ApiObjectCollection $collection) 
     {
