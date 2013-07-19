@@ -3,15 +3,30 @@
 namespace MrTest\Api\Http;
 
 use Mr\Api\Model\Channel;
+use Mr\Api\Repository\ChannelRepository;
+use Mr\Api\Http\Client;
 
 
 class ChannelTest extends \PHPUnit_Framework_TestCase {
+
+    const HOST = 'api.devmobilerider.com';
+    const APP_ID = '7af9ca9a0eba0662d5a494a36c0af12a';
+    const APP_SECRET = 'f4b6833ac8ce175bd4f5e9a81214a5c20f3aef7680ba64720e514d94102abe39';
+
+    protected $client = null;
+    protected $repo = null;
+
+    public function setUp() {
+        $this->client = new Client(self::HOST, self::APP_ID, self::APP_SECRET);
+        $this->repo = new ChannelRepository($this->client);
+    }
 
     protected function getDummyChannel($data = NULL) {
         if (empty($data)) {
             $data = array('name'=>'some_name');
         }
-        return new Channel('Channel', $data);
+        // return new Channel($this->repo, $data);
+        return $this->repo->create($data);
     }
 
     public function testGetModel() {
@@ -33,35 +48,126 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $this->assertFalse($channel->isNew());
     }
 
-    public function testGetDataFieldValues() {
-        $channel = $this->getDummyChannel();
+    public function testSaveModel() {
+        $channel = $this->getDummyChannel(array('name' => 'my pretty name!'));
+        $channel->save();
+        $this->assertNotNull($channel->getId());
+        $id = $channel->getId();
 
-        $channel->some_key = 'some_key_value';
-        $this->assertEquals('some_key_value', $channel->some_key);
+        $channel_count = count($this->repo->getAll());
+        $this->assertGreaterThan(0, $channel_count);
 
-        $this->assertTrue($channel->isModified());
-        $channel->saved();
-        $this->assertFalse($channel->isModified());
+        $channel2 = $this->repo->get($id);
 
-        $channel->setData(array(
-            'some_key' => 'other_key_value',
-            'some_other_key' => 'yet_another_key_value'
+        $this->assertNotNull($channel2);
+        $this->assertEquals($channel, $channel2);
+
+        $this->repo->delete($channel);
+
+        $this->assertCount($channel_count - 1, $this->repo->getAll());
+        $this->assertNull($this->repo->get($id));
+    }
+
+    public function testGetSetNameValue() {
+        $channel = $this->getDummyChannel(array(
+            'name' => 'my pretty test name!'
         ));
+        $this->assertTrue($channel->isNew());
+
+        $channel->name = 'some_key_value';
+        $this->assertEquals('some_key_value', $channel->name);
 
         $this->assertTrue($channel->isModified());
-        $this->assertEquals('other_key_value', $channel->some_key);
-        $this->assertEquals('yet_another_key_value', $channel->some_other_key);
-
-        $channel->saved();
+        $channel->save();
+        $this->assertFalse($channel->isNew());
         $this->assertFalse($channel->isModified());
 
-        $this->assertTrue(isset($channel->some_key));
-        $this->assertFalse(isset($channel->non_existent_key));
+        $channel_id = $channel->getId();
+
+        $channel = $this->repo->get($channel_id);
+        $this->assertNotNull($channel);
+        $this->assertEquals('some_key_value', $channel->name);
+
+        $channel->delete();
+        $this->assertNull($this->repo->get($channel_id));
+    }
+
+    public function testGetSetDescriptionValue() {
+        $original_name = 'my pretty test name!';
+        $original_description = 'my pretty test description!';
+        $new_description = 'my prettier test description!';
+
+        $channel = $this->getDummyChannel(array(
+            'name' => $original_name,
+            'description' => $original_description
+        ));
+        $this->assertTrue($channel->isNew());
+        $this->assertFalse($channel->isModified());
+        $channel->save();
+        $this->assertFalse($channel->isNew());
+        $this->assertFalse($channel->isModified());
+
+        $channel_id = $channel->getId();
+
+        $channel = $this->repo->get($channel_id);
+        $this->assertNotNull($channel);
+        $this->assertEquals($original_description, $channel->description);
+
+        $channel->description = $new_description;
+        $this->assertFalse($channel->isNew());
+        $this->assertTrue($channel->isModified());
+        $channel->save();
+        $this->assertFalse($channel->isNew());
+        $this->assertFalse($channel->isModified());
+
+        $channel = $this->repo->get($channel_id);
+        $this->assertNotNull($channel);
+        $this->assertEquals($new_description, $channel->description);
+
+        $channel->delete();
+        $this->assertNull($this->repo->get($channel_id));
+    }
+
+    // TODO: This could change to a more meaningful/specific exception class
+    /**
+     * @expectedException Mr\Exception\ServerErrorException
+     */
+    public function testExceptionForUnknownFields() {
+        $channel = $this->getDummyChannel(array(
+            'name' => 'some nice name here',
+            'an_unknown_field_name' => 'a_value_for_the_unknown_field'
+        ));
+        $this->assertTrue($channel->isNew());
+        $this->assertFalse($channel->isModified());
+        $channel->save();
     }
 
     public function testAsString() {
         $channel = $this->getDummyChannel(array('id'=>1, 'name'=>'some_name'));
         $this->assertEquals('some_name', $channel . '');
+    }
+
+    public function testICanNotSetMyOwnId() {
+        $my_own_id = 99999999;
+        $channel = $this->getDummyChannel(array(
+            'id' => $my_own_id,
+            'name' => 'my pretty test name!'
+        ));
+
+        $this->assertFalse($channel->isNew());
+        $this->assertFalse($channel->isModified());
+        $channel->save();
+        $this->assertFalse($channel->isNew());
+        $this->assertFalse($channel->isModified());
+
+        $channel_id = $channel->getId();
+        $this->assertNotEquals($my_own_id, $channel_id);
+
+        $channel = $this->repo->get($channel_id);
+        $this->assertNotNull($channel);
+
+        $channel->delete();
+        $this->assertNull($this->repo->get($channel_id));
     }
 
     /**
