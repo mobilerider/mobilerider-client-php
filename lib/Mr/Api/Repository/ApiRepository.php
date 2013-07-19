@@ -286,9 +286,14 @@ abstract class ApiRepository
         if (count($objects) == 1) {
             $object = $objects[0];
             $data = $object->getData();
+            // Removes primary key from the data array (server will reject it)
+            unset($data[$object->getKeyField()]);
         } else {
             foreach ($objects as $object) {
-                $data[] = $object->getData();
+                $data = $object->getData();
+                // Removes primary key from the data array (server will reject it)
+                unset($data[$object->getKeyField()]);
+                $data[] = $data;
             }
         }
 
