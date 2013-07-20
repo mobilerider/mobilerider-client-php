@@ -105,11 +105,7 @@ abstract class ApiRepository
             throw new MissingResponseAttributesException(array('status'));
         }        
 
-        $success = is_object($response) && (
-            self::STATUS_OK == $response->status ||
-            // Avoid throwing exception if the entity was not found, instead return null
-            sprintf(self::STATUS_NOT_FOUND_PATTERN, strtolower($this->getModel())) == $response->status
-        );
+        $success = is_object($response) && self::STATUS_OK == $response->status;
 
         if (!$success && is_object($response) && self::STATUS_DENIED_ACCESS == $response->status) {
             throw new DeniedEntityAccessException();
