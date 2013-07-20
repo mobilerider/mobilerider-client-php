@@ -39,9 +39,10 @@ class Service
     */
     protected $_client;
 
-    public function __construct($appId, $secret)
+    public function __construct($appId, $secret, $host = '')
     {
-        $this->_client = new Client(self::API_HOST, $appId, $secret);
+        $host = !empty($host) ? self::API_HOST : $host;
+        $this->_client = new Client($host, $appId, $secret);
     }
 
     public function getClient()
