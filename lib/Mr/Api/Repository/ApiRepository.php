@@ -285,11 +285,13 @@ abstract class ApiRepository
             // Removes primary key from the data array (server will reject it)
             unset($data[$object->getKeyField()]);
         } else {
+            $data = array();
+
             foreach ($objects as $object) {
-                $data = $object->getData();
+                $objectData = $object->getData();
                 // Removes primary key from the data array (server will reject it)
-                unset($data[$object->getKeyField()]);
-                $data[] = $data;
+                unset($objectData[$object->getKeyField()]);
+                $data[] = $objectData;
             }
         }
 

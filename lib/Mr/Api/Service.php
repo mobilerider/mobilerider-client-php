@@ -108,9 +108,12 @@ class Service
     {
         if ((is_array($object) || $object instanceof ApiObjectCollection) && count($object)) {
             $firstObject = $object[0];
+        } else {
+            $firstObject = $object;
+        }
+        
+        if ($firstObject instanceof ApiObject) {
             $model = $firstObject->getModel();
-        } else if ($object instanceof ApiObject) {
-            $model = $object->getModel();
         } else {
             throw new InvalidDataOperationException('Invalid object type or empty data', 'Service Save object');
         }
