@@ -41,7 +41,7 @@ class Service
 
     public function __construct($appId, $secret, $host = '')
     {
-        $host = !empty($host) ? self::API_HOST : $host;
+        $host = empty($host) ? self::API_HOST : $host;
         $this->_client = new Client($host, $appId, $secret);
     }
 
