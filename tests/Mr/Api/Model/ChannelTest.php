@@ -9,7 +9,8 @@ use Mr\Api\Http\Client;
 
 class ChannelTest extends \PHPUnit_Framework_TestCase {
 
-    const HOST = 'api.devmobilerider.com';
+    // const HOST = 'api.devmobilerider.com';
+    const HOST = 'api.devmobilerider.local';
     const APP_ID = '7af9ca9a0eba0662d5a494a36c0af12a';
     const APP_SECRET = 'f4b6833ac8ce175bd4f5e9a81214a5c20f3aef7680ba64720e514d94102abe39';
 
@@ -65,7 +66,13 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $this->repo->delete($channel);
 
         $this->assertCount($channel_count - 1, $this->repo->getAll());
-        $this->assertNull($this->repo->get($id));
+
+        try {
+            $this->assertNull($this->repo->get($id));
+        } catch (\Exception $expected) {
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+        }
     }
 
     public function testGetSetNameValue() {
@@ -89,7 +96,12 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('some_key_value', $channel->name);
 
         $channel->delete();
-        $this->assertNull($this->repo->get($channel_id));
+        try {
+            $this->assertNull($this->repo->get($channel_id));
+        } catch (\Exception $expected) {
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+        }
     }
 
     public function testGetSetDescriptionValue() {
@@ -116,6 +128,7 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $channel->description = $new_description;
         $this->assertFalse($channel->isNew());
         $this->assertTrue($channel->isModified());
+        $this->assertEquals($new_description, $channel->description);
         $channel->save();
         $this->assertFalse($channel->isNew());
         $this->assertFalse($channel->isModified());
@@ -125,7 +138,12 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($new_description, $channel->description);
 
         $channel->delete();
-        $this->assertNull($this->repo->get($channel_id));
+        try {
+            $this->assertNull($this->repo->get($channel_id));
+        } catch (\Exception $expected) {
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+        }
     }
 
     // TODO: This could change to a more meaningful/specific exception class
@@ -142,33 +160,47 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $channel->save();
     }
 
+    // TODO: This could change to a more meaningful/specific exception class
+    /**
+     * @expectedException Mr\Exception\ServerErrorException
+     */
+    public function testExceptionForURLField() {
+        $channel = $this->getDummyChannel(array(
+            'name' => 'some nice name here',
+            'url' => 'a_value_for_the_url_field'
+        ));
+        $this->assertTrue($channel->isNew());
+        $this->assertFalse($channel->isModified());
+        $channel->save();
+    }
+
     public function testAsString() {
         $channel = $this->getDummyChannel(array('id'=>1, 'name'=>'some_name'));
         $this->assertEquals('some_name', $channel . '');
     }
 
-    public function testICanNotSetMyOwnId() {
-        $my_own_id = 99999999;
-        $channel = $this->getDummyChannel(array(
-            'id' => $my_own_id,
-            'name' => 'my pretty test name!'
-        ));
+public function testICanNotSetMyOwnId() {
+    $my_own_id = 99999998;
+    $channel = $this->getDummyChannel(array(
+        'id' => $my_own_id,
+        'name' => 'my pretty test name with a wrong ID!'
+    ));
 
-        $this->assertFalse($channel->isNew());
-        $this->assertFalse($channel->isModified());
-        $channel->save();
-        $this->assertFalse($channel->isNew());
-        $this->assertFalse($channel->isModified());
+    $this->assertFalse($channel->isNew());
+    $this->assertFalse($channel->isModified());
+    $channel->save();
+    $this->assertFalse($channel->isNew());
+    $this->assertFalse($channel->isModified());
 
-        $channel_id = $channel->getId();
-        $this->assertNotEquals($my_own_id, $channel_id);
+    $channel_id = $channel->getId();
+    $this->assertNotEquals($my_own_id, $channel_id);
 
-        $channel = $this->repo->get($channel_id);
-        $this->assertNotNull($channel);
+    $channel = $this->repo->get($channel_id);
+    $this->assertNotNull($channel);
 
-        $channel->delete();
-        $this->assertNull($this->repo->get($channel_id));
-    }
+    $channel->delete();
+    $this->assertNull($this->repo->get($channel_id));
+}
 
     /**
      * @expectedException Mr\Exception\InvalidRepositoryException
