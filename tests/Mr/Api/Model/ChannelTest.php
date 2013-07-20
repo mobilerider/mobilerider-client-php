@@ -179,28 +179,31 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('some_name', $channel . '');
     }
 
-public function testICanNotSetMyOwnId() {
-    $my_own_id = 99999998;
-    $channel = $this->getDummyChannel(array(
-        'id' => $my_own_id,
-        'name' => 'my pretty test name with a wrong ID!'
-    ));
+    public function testICanNotSetMyOwnId() {
+        $my_own_id = 99999998;
 
-    $this->assertFalse($channel->isNew());
-    $this->assertFalse($channel->isModified());
-    $channel->save();
-    $this->assertFalse($channel->isNew());
-    $this->assertFalse($channel->isModified());
+        try {
+            $this->assertNull($this->repo->get($my_own_id));
+        } catch (\Exception $expected) {
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+        }
 
-    $channel_id = $channel->getId();
-    $this->assertNotEquals($my_own_id, $channel_id);
+        $channel = $this->getDummyChannel(array(
+            'id' => $my_own_id,
+            'name' => 'my pretty test name with a wrong ID!'
+        ));
 
-    $channel = $this->repo->get($channel_id);
-    $this->assertNotNull($channel);
+        $this->assertFalse($channel->isNew());
+        $this->assertFalse($channel->isModified());
 
-    $channel->delete();
-    $this->assertNull($this->repo->get($channel_id));
-}
+        try {
+            $channel->save();
+        } catch (\Exception $expected) {
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+        }
+    }
 
     /**
      * @expectedException Mr\Exception\InvalidRepositoryException
