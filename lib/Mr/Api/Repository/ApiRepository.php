@@ -18,6 +18,7 @@ use Mr\Exception\ServerErrorException;
 use Mr\Exception\InvalidResponseException;
 use Mr\Exception\DeniedEntityAccessException;
 use Mr\Exception\MissingResponseAttributesException;
+use Mr\Exception\MultipleServerErrorsException;
 
 /** 
  * ApiRepository Class file
@@ -50,6 +51,8 @@ abstract class ApiRepository
     const STATUS_OK = 'ok';
     const STATUS_NOT_FOUND_PATTERN = 'Unknown %s';
     const STATUS_DENIED_ACCESS = 'Access denied';
+
+    const MSG_WITH_ERRORS = "Some errors ocurred during this action.";
 
     /**
     * var ClientInterface
@@ -97,17 +100,21 @@ abstract class ApiRepository
     * @param $response mixed
     * @return boolean
     */
-    protected function validateResponse($response)
+    protected function validateResponse($response, $method)
     {
         $responseAttrs = get_object_vars($response);
 
         if (!array_key_exists('status', $responseAttrs)) {
             throw new MissingResponseAttributesException(array('status'));
-        }        
+        }
 
         $success = is_object($response) && self::STATUS_OK == $response->status;
 
-        if (!$success && is_object($response) && self::STATUS_DENIED_ACCESS == $response->status) {
+        if (!$success && self::MSG_WITH_ERRORS == $response->status) {
+            throw new MultipleServerErrorsException($response->objects, $method);
+        }
+
+        if (!$success && self::STATUS_DENIED_ACCESS == $response->status) {
             throw new DeniedEntityAccessException();
         } 
 
@@ -282,15 +289,11 @@ abstract class ApiRepository
         if (count($objects) == 1) {
             $object = $objects[0];
             $data = $object->getData();
-            // Removes primary key from the data array (server will reject it)
-            unset($data[$object->getKeyField()]);
         } else {
             $data = array();
 
             foreach ($objects as $object) {
                 $objectData = $object->getData();
-                // Removes primary key from the data array (server will reject it)
-                unset($objectData[$object->getKeyField()]);
                 $data[] = $objectData;
             }
         }
@@ -300,8 +303,8 @@ abstract class ApiRepository
 
     protected function postSave($response, $object, $method)
     {
-        if ($method == AbstractClient::METHOD_POST) {
-            $this->validateResponse($response);
+        if ($method == AbstractClient::METHOD_POST || $method == AbstractClient::METHOD_PUT) {
+            $this->validateResponse($response, $method);
             $data = isset($response->objects) ? $response->objects : $response->object;
             $data = !is_array($data) ? array($data) : $data;
         }
