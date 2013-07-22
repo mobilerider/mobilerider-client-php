@@ -6,6 +6,9 @@ use Mr\Api\Http\Client;
 use Mr\Api\Collection\ApiObjectCollection;
 use Mr\Api\Model\ApiObject;
 
+// Exceptions
+use Mr\Api\Exception\InvalidDataOperationException;
+
 /** 
  * Service Class file
  *
