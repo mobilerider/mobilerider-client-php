@@ -9,8 +9,8 @@ use Mr\Api\Http\Client;
 
 class ChannelTest extends \PHPUnit_Framework_TestCase {
 
-    // const HOST = 'api.devmobilerider.com';
-    const HOST = 'api.devmobilerider.local';
+    const HOST = 'api.devmobilerider.com';
+    // const HOST = 'api.devmobilerider.local';
     const APP_ID = '7af9ca9a0eba0662d5a494a36c0af12a';
     const APP_SECRET = 'f4b6833ac8ce175bd4f5e9a81214a5c20f3aef7680ba64720e514d94102abe39';
 
@@ -61,6 +61,12 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $channel2 = $this->repo->get($id);
 
         $this->assertNotNull($channel2);
+
+        $resource_url_attr_name = 'resource-url';
+        $channel->$resource_url_attr_name = "/api/channel/{$channel->id}/";
+        $channel->saved();
+        $this->assertFalse($channel->isModified());
+
         $this->assertEquals($channel, $channel2);
 
         $this->repo->delete($channel);
