@@ -276,6 +276,18 @@ abstract class ApiObject
     }
 
     /**
+     * <b>Magic method</b>. Unsets a property
+     *
+     * @param string $name property name
+     *
+     * @return void
+     */
+    public function __unset($name) {
+        $name = strtolower($name);
+        unset($this->_data[$name]);
+    }
+
+    /**
      * <b>Magic method</b>. Checks if property exists
      *
      * @param string $name property name

@@ -97,8 +97,12 @@ abstract class ApiRepository
     * @param $response mixed
     * @return boolean
     */
-    protected function validateResponse($response)
+    protected function validateResponse($response, $method)
     {
+        if (empty($response)) {
+            throw new InvalidResponseException('Empty response.');
+        }
+
         $responseAttrs = get_object_vars($response);
 
         if (!array_key_exists('status', $responseAttrs)) {
@@ -119,8 +123,10 @@ abstract class ApiRepository
             }
         }
 
-        if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
-            throw new MissingResponseAttributesException(array('object(s)'));
+        if (in_array($method, array(AbstractClient::METHOD_POST, AbstractClient::METHOD_GET))) {
+            if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
+                throw new MissingResponseAttributesException(array('object(s)'));
+            }
         }
 
         return $success;
@@ -187,7 +193,7 @@ abstract class ApiRepository
         
         $response = $this->_client->get($path);
 
-        if ($this->validateResponse($response) && !empty($response->object)) {
+        if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->object)) {
             return $this->create($response->object);
         }
 
@@ -216,7 +222,7 @@ abstract class ApiRepository
                 $metadata = array_merge($metadata, $this->validateMetadata($response));
             }
 
-            if ($this->validateResponse($response) && !empty($response->objects)) {
+            if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->objects)) {
                 foreach ($response->objects as $object) {
                     $results[] = $this->create($object);
                 }
@@ -298,8 +304,9 @@ abstract class ApiRepository
 
     protected function postSave($response, $object, $method)
     {
+        $this->validateResponse($response, $method);
+
         if ($method == AbstractClient::METHOD_POST) {
-            $this->validateResponse($response);
             $data = isset($response->objects) ? $response->objects : $response->object;
             $data = !is_array($data) ? array($data) : $data;
         }

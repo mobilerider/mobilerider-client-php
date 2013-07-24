@@ -329,7 +329,9 @@ class ApiObjectCollectionTest extends \PHPUnit_Framework_TestCase
 
         // Empty response to satisfy save request
         $this->_clientMockAdapter->clear();
-        $this->_clientMockAdapter->addResponseBy();
+        $this->_clientMockAdapter->addResponseBy(Response::STATUS_OK, '', json_encode(array(
+            'status' => 'ok'
+        )));
         $this->_collection->save();
         // All objects should be saved
         foreach ($this->_collection as $object) {
