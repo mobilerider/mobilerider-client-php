@@ -143,6 +143,16 @@ abstract class ApiObject
     }
 
     /**
+    * Returns validators to apply to this object
+    *
+    * @return array
+    */
+    public function getValidators()
+    {
+        array();
+    }
+
+    /**
     * Sets given data as part of this object field values.
     * Data parameter needs to be an object or an array, otherwise
     * an exception is thrown.
