@@ -4,6 +4,9 @@ namespace Mr\Api\Model;
 
 use Mr\Exception\InvalidRepositoryException;
 use Mr\Exception\InvalidFormatException;
+use Mr\Exception\InvalidFieldException;
+
+use Mr\Api\Util\Validator;
 
 /**
  * ApiObject Class file
@@ -192,8 +195,23 @@ abstract class ApiObject
         $this->setData($data);
     }
 
+    /**
+     * Validates object data
+     *
+     * @return boolean
+     */
     public function validate()
     {
+        $validators = $this->getValidators();
+
+        foreach ($validators as $field => $validator) {
+            $value = isset($this->_data[$field]) ? $this->_data[$field] : null;
+
+            if (!Validator::validate($value, $validator)) {
+                throw new InvalidFieldException($field, $value, $validator);
+            }
+        }
+
         return self::STATUS_VALID;
     }
 
@@ -265,7 +283,6 @@ abstract class ApiObject
      */
     public function __set($name, $value)
     {
-        $name = strtolower($name);
         $oldValue = $this->{$name};
 
         if ($modified = $oldValue !== $value) {
