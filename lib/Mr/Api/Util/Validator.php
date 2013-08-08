@@ -73,7 +73,9 @@ class Validator
                 return false;
             }
 
-            self::validateModifiers($value, $constraint);
+            if (!self::validateModifiers($value, $constraint)) {
+                return false;
+            }
         }
 
         return true;
@@ -98,7 +100,9 @@ class Validator
                 }
             }
 
-            self::validateModifiers($value, $type);
+            if (!self::validateModifiers($value, $type)) {
+                return false;
+            }
         }
 
         return true;
@@ -134,8 +138,9 @@ class Validator
             case self::MODIFIER_IP:
                 return filter_var($value, FILTER_VALIDATE_IP);
             case self::MODIFIER_POSITIVE:
-                return $value >= 0;
-                break;
+                return ($value >= 0);
+            case self::MODIFIER_NEGATIVE:
+                return ($value < 0);
             default:
                 return true;
         }
