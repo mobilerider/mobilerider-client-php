@@ -29,6 +29,8 @@ use Mr\Api\Util\Validator;
  */
 class Media extends ApiObject
 {
+	const TYPE_LIVE = 'Live Video';
+
     public function getStringField()
     {
         return 'title';
@@ -36,38 +38,43 @@ class Media extends ApiObject
 
     public function getValidators()
     {
-    	return array(
-    		'encoderPrimaryIp' => array(
-    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
-    			Validator::TYPES => array(
-    				Validator::MODIFIERS => array(Validator::MODIFIER_IP)
-    			)
-    		),
-    		'encoderBackupIp' => array(
-    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
-    			Validator::TYPES => array(
-    				Validator::MODIFIERS => array(Validator::MODIFIER_IP)
-    			)
-    		),
-    		'encoderPassword' => array(
-    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED)
-    		),
-    		'bitrates' => array(
-    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
-    			Validator::TYPES => array(
-    				Validator::TYPE => Validator::TYPE_ARRAY,
-    				Validator::MODIFIERS => array(
-    					Validator::MODIFIER => Validator::MODIFIER_NESTED,
-    					Validator::MODIFIER_VALIDATORS => array(
-    						Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
-    						Validator::TYPES => array(
-    							Validator::TYPE => Validator::TYPE_INT,
-			    				Validator::MODIFIERS => array(Validator::MODIFIER_POSITIVE)
-			    			)
-    					)
-    				)
-    			)
-    		)
-    	);
+    	switch ($this->type) {
+    		case self::TYPE_LIVE:
+    			return array(
+		    		'encoderPrimaryIp' => array(
+		    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+		    			Validator::TYPES => array(
+		    				Validator::MODIFIERS => array(Validator::MODIFIER_IP)
+		    			)
+		    		),
+		    		'encoderBackupIp' => array(
+		    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+		    			Validator::TYPES => array(
+		    				Validator::MODIFIERS => array(Validator::MODIFIER_IP)
+		    			)
+		    		),
+		    		'encoderPassword' => array(
+		    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED)
+		    		),
+		    		'bitrates' => array(
+		    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+		    			Validator::TYPES => array(
+		    				Validator::TYPE => Validator::TYPE_ARRAY,
+		    				Validator::MODIFIERS => array(
+		    					Validator::MODIFIER => Validator::MODIFIER_NESTED,
+		    					Validator::MODIFIER_VALIDATORS => array(
+		    						Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+		    						Validator::TYPES => array(
+		    							Validator::TYPE => Validator::TYPE_INT,
+					    				Validator::MODIFIERS => array(Validator::MODIFIER_POSITIVE)
+					    			)
+		    					)
+		    				)
+		    			)
+		    		)
+		    	);
+    		default:
+    			return array();
+    	}
     }
 }
