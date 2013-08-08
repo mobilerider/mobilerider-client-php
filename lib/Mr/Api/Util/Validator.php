@@ -93,7 +93,7 @@ class Validator
                 $typeName = is_array($type) ? $type[self::TYPE] : $type;
                 $method = 'is_' . $typeName;
 
-                if (!call_user_func_array($method, array($value))) {
+                if (!call_user_func_array($method, array($value))) { //@TODO: Allow support for optional types (several type alternatives)
                     return false;
                 }
             }
