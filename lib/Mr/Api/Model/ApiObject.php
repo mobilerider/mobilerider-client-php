@@ -279,7 +279,6 @@ abstract class ApiObject
 
     public function __get($name)
     {
-        $name = strtolower($name);
         return array_key_exists($name, $this->_data) ? $this->_data[$name] : null;
     }
 
@@ -310,7 +309,6 @@ abstract class ApiObject
      * @return void
      */
     public function __unset($name) {
-        $name = strtolower($name);
         unset($this->_data[$name]);
     }
 
@@ -323,7 +321,6 @@ abstract class ApiObject
      */
     public function __isset($name)
     {
-        $name = strtolower($name);
         return array_key_exists($name, $this->_data);
     }
 
