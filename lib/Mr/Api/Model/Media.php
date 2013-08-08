@@ -2,6 +2,8 @@
 
 namespace Mr\Api\Model;
 
+use Mr\Api\Util\Validator;
+
 /** 
  * Media Class file
  *
@@ -30,5 +32,42 @@ class Media extends ApiObject
     public function getStringField()
     {
         return 'title';
+    }
+
+    public function getValidators()
+    {
+    	return array(
+    		'encoderPrimaryIp' => array(
+    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+    			Validator::TYPES => array(
+    				Validator::MODIFIERS => array(Validator::MODIFIER_IP)
+    			)
+    		),
+    		'encoderBackupIp' => array(
+    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+    			Validator::TYPES => array(
+    				Validator::MODIFIERS => array(Validator::MODIFIER_IP)
+    			)
+    		),
+    		'encoderPassword' => array(
+    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED)
+    		),
+    		'bitrates' => array(
+    			Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+    			Validator::TYPES => array(
+    				Validator::TYPE => Validator::TYPE_ARRAY,
+    				Validator::MODIFIERS => array(
+    					Validator::MODIFIER => Validator::MODIFIER_NESTED,
+    					Validator::MODIFIER_VALIDATORS => array(
+    						Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+    						Validator::TYPES => array(
+    							Validator::TYPE => Validator::TYPE_INT,
+			    				Validator::MODIFIERS => array(Validator::MODIFIER_POSITIVE)
+			    			)
+    					)
+    				)
+    			)
+    		)
+    	);
     }
 }
