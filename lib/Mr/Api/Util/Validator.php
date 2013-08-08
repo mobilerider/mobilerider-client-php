@@ -35,15 +35,24 @@ class Validator
             return false;
         }
 
+        if (!self::validateModifiers($value, $validators)) {
+            return false;
+        }
+
         return true;
     }
 
-    private static function validateConstraints($value, array $validators)
+    private static function validateModifiers($value, $validators)
     {
-        $constraints = isset($validators[self::CONSTRAINTS]) ? $validators[self::CONSTRAINTS] : array();
+        if (!is_array($validators) || !isset($validators[self::MODIFIERS])) {
+            return true;
+        }
 
-        foreach ($constraints as $constraint) {
-            if (!self::applyConstraint($value, $constraint)) {
+        $modifiers = is_array($validators) ? $validators[self::MODIFIERS] : array();
+        $modifiers = is_array($modifiers) && (empty($modifiers) || isset($modifiers[0])) ? $modifiers : array($modifiers);
+
+        foreach ($modifiers as $modifier) {
+            if (!self::applyModifier($value, $modifier)) {
                 return false;
             }
         }
@@ -51,19 +60,28 @@ class Validator
         return true;
     }
 
-    private static function applyConstraint($value, $constraint)
+    private static function validateConstraints($value, $validators)
     {
-        switch ($constraint) {
-            case self::CONSTRAINT_REQUIRED:
-                return !empty($value);
-            default:
-                return true;
+        if (!is_array($validators) || !isset($validators[self::CONSTRAINTS])) {
+            return true;
         }
+
+        $constraints = isset($validators[self::CONSTRAINTS]) ? $validators[self::CONSTRAINTS] : array();
+
+        foreach ($constraints as $constraint) {
+            if (!self::applyConstraint($value, $constraint)) {
+                return false;
+            }
+
+            self::validateModifiers($value, $constraint);
+        }
+
+        return true;
     }
 
     private static function validateTypes($value, array $validators)
     {
-        if (!isset($validators[self::TYPES])) {
+        if (!is_array($validators) || !isset($validators[self::TYPES])) {
             return true;
         }
 
@@ -80,17 +98,20 @@ class Validator
                 }
             }
 
-            $modifiers = is_array($type) ? $type[self::MODIFIERS] : array();
-            $modifiers = is_array($modifiers) && (empty($modifiers) || isset($modifiers[0])) ? $modifiers : array($modifiers);
-
-            foreach ($modifiers as $modifier) {
-                if (!self::applyModifier($value, $modifier)) {
-                    return false;
-                }
-            }
+            self::validateModifiers($value, $type);
         }
 
         return true;
+    }
+
+    private static function applyConstraint($value, $constraint)
+    {
+        switch ($constraint) {
+            case self::CONSTRAINT_REQUIRED:
+                return !empty($value);
+            default:
+                return true;
+        }
     }
 
     private static function applyModifier($value, $modifier)
