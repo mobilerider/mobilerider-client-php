@@ -27,7 +27,7 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
             $data = array('title'=>'some_name');
         } else {
             if (isset($data['type']) && Media::TYPE_LIVE == $data['type']) {
-                // Adds default stream data
+                // Adds default live stream data
                 if (!array_key_exists('encoderPrimaryIp', $data)) {
                     $data['encoderPrimaryIp'] = '120.0.0.1';
                 }
@@ -386,5 +386,96 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(1, $media->{$media->getKeyField()});
         $this->assertEquals('some_title_value_4', $media->title);
         $this->assertEquals('some_description_value_4', $media->description);
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testEmptyLivePrimaryIpField() 
+    {
+        $media = $this->getDummyMedia(array(
+            'type' => Media::TYPE_LIVE
+        ));
+
+        $media->encoderPrimaryIp = null;
+        $media->save();
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testInvalidLivePrimaryIpField() 
+    {
+        $media = $this->getDummyMedia(array(
+            'type' => Media::TYPE_LIVE
+        ));
+        
+        $media->encoderPrimaryIp = 'Mallformed.Ip';
+        $media->save();
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testEmptyLiveBackupIpField() 
+    {
+        $media = $this->getDummyMedia(array(
+            'type' => Media::TYPE_LIVE
+        ));
+
+        $media->encoderBackupIp = null;
+        $media->save();
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testInvalidLiveBackupIpField() 
+    {
+        $media = $this->getDummyMedia(array(
+            'type' => Media::TYPE_LIVE
+        ));
+
+        $media->encoderBackupIp = 'Mallformed.Ip';
+        $media->save();
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testEmptyLivePasswordField() 
+    {
+        $media = $this->getDummyMedia(array(
+            'type' => Media::TYPE_LIVE
+        ));
+
+        $media->encoderPassword = null;
+        $media->save();
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testEmptyLiveBitratesField() 
+    {
+        $media = $this->getDummyMedia(array(
+            'type' => Media::TYPE_LIVE
+        ));
+
+        $media->bitrates = null;
+        $media->save();
+    }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testInvalidLiveBitratesField() 
+    {
+        $media = $this->getDummyMedia(array(
+            'type' => Media::TYPE_LIVE
+        ));
+
+        $media->bitrates = array('not an int');
+        $media->save();
     }
 }
