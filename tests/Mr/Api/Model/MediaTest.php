@@ -25,7 +25,27 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
     protected function getDummyMedia($data = NULL) {
         if (empty($data)) {
             $data = array('title'=>'some_name');
+        } else {
+            if (isset($data['type']) && Media::TYPE_LIVE == $data['type']) {
+                // Adds default stream data
+                if (!array_key_exists('encoderPrimaryIp', $data)) {
+                    $data['encoderPrimaryIp'] = '120.0.0.1';
+                }
+
+                if (!array_key_exists('encoderBackupIp', $data)) {
+                    $data['encoderBackupIp'] = '120.0.0.1';
+                }
+
+                if (!array_key_exists('encoderPassword', $data)) {
+                    $data['encoderPassword'] = 'test';
+                }
+
+                if (!array_key_exists('bitrates', $data)) {
+                    $data['bitrates'] = array(1000);
+                }
+            }
         }
+
         // return new Media($this->repo, $data);
         return $this->repo->create($data);
     }
