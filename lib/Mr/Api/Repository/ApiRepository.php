@@ -88,6 +88,16 @@ abstract class ApiRepository
     }
 
     /**
+    * Returns current client object
+    *
+    * @return Mr\Api\AbstractClient
+    */
+    public function getClient()
+    {
+        return $this->_client;
+    }
+
+    /**
     * Returns TRUE if given response is valid or throw an exception otherwise
     *
     * @throws DeniedEntityAccessException
