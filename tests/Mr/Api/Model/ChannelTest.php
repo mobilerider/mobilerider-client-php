@@ -349,4 +349,14 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('other_key_value_from_apiobject', $channel->some_key);
         $this->assertEquals('yet_another_key_value_from_apiobject', $channel->some_other_key);
     }
+
+    /**
+     * @expectedException Mr\Exception\InvalidFieldException
+     */
+    public function testInvalidUrlField() 
+    {
+        $media = $this->getDummyChannel();
+        $media->url = 'not a valid url';
+        $media->save();
+    }
 }
