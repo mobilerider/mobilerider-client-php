@@ -99,7 +99,7 @@ class Client extends AbstractClient implements ClientInterface
         $this->_request = new Request($this->getUrl($path), $method, $config);
         
         if (!empty($this->_username)) {
-            $this->_request->setAuth($this->_username, $this->_password, \HTTP_Request2::AUTH_DIGEST);
+            $this->_request->setAuth($this->_username, $this->_password, \HTTP_Request2::AUTH_BASIC);
         }
 
         if (!empty($this->_adapter)) {
