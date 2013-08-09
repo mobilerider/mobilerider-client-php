@@ -70,7 +70,7 @@ class Media extends ApiObject
                         Validator::MODIFIERS => array(
                             Validator::MODIFIER => Validator::MODIFIER_NESTED,
                             Validator::MODIFIER_VALIDATORS => array(
-                                Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED),
+                                Validator::CONSTRAINTS => array(Validator::CONSTRAINT_NUMERIC_REQUIRED),
                                 Validator::TYPES => array(
                                     Validator::TYPE => Validator::TYPE_INT,
                                     Validator::MODIFIERS => array(Validator::MODIFIER_POSITIVE)
