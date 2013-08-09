@@ -124,13 +124,22 @@ class Validator
 
         switch ($name) {
             case self::MODIFIER_NESTED:
-                if (!is_array($value) || empty($value)) {
+                if ((!is_array($value) && !is_object($value)) || empty($value)) {
                     return self::validate(null, $modifier[self::MODIFIER_VALIDATORS]);
                 }
 
-                foreach ($value as $child) {
-                    if (!self::validate($child, $modifier[self::MODIFIER_VALIDATORS])) {
-                        return false;
+                if (is_array($value)) {
+                    foreach ($value as $child) {
+                        if (!self::validate($child, $modifier[self::MODIFIER_VALIDATORS])) {
+                            return false;
+                        }
+                    }
+                } else if (is_object($value)) {
+                    // Assumes validators will be arranged by field names
+                    foreach ($modifier[self::MODIFIER_VALIDATORS] as $field => $validator) {
+                        if (!self::validate($value->{$field}, $validator)) {
+                            return false;
+                        }
                     }
                 }
 
