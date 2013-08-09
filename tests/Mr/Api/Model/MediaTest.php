@@ -187,11 +187,7 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         }
     }
 
-    // TODO: This could change to a more meaningful/specific exception class
-    /**
-     * @expectedException Mr\Exception\ServerErrorException
-     */
-    public function testExceptionForUnknownFields() {
+    public function testIgnoredUnknownFields() {
         $media = $this->getDummyMedia(array(
             'title' => 'some nice name here',
             'an_unknown_field_name' => 'a_value_for_the_unknown_field'
