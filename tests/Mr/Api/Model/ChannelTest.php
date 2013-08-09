@@ -9,8 +9,8 @@ use Mr\Api\Http\Client;
 
 class ChannelTest extends \PHPUnit_Framework_TestCase {
 
-    const HOST = 'api.devmobilerider.com';
-    // const HOST = 'api.devmobilerider.local';
+    //const HOST = 'api.devmobilerider.com';
+     const HOST = 'api.devmobilerider.local';
     const APP_ID = '7af9ca9a0eba0662d5a494a36c0af12a';
     const APP_SECRET = 'f4b6833ac8ce175bd4f5e9a81214a5c20f3aef7680ba64720e514d94102abe39';
 
@@ -26,6 +26,11 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         if (empty($data)) {
             $data = array('name'=>'some_name');
         }
+
+        if (!isset($data['url'])) {
+            $data['url'] = 'http://testing.com';
+        }
+
         // return new Channel($this->repo, $data);
         return $this->repo->create($data);
     }
@@ -152,11 +157,7 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         }
     }
 
-    // TODO: This could change to a more meaningful/specific exception class
-    /**
-     * @expectedException Mr\Exception\ServerErrorException
-     */
-    public function testExceptionForUnknownFields() {
+    public function testIgnoredUnknownFields() {
         $channel = $this->getDummyChannel(array(
             'name' => 'some nice name here',
             'an_unknown_field_name' => 'a_value_for_the_unknown_field'
@@ -168,7 +169,7 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
 
     // TODO: This could change to a more meaningful/specific exception class
     /**
-     * @expectedException Mr\Exception\ServerErrorException
+     * @expectedException Mr\Exception\InvalidFieldException
      */
     public function testExceptionForURLField() {
         $channel = $this->getDummyChannel(array(
