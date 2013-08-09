@@ -478,4 +478,23 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         $media->bitrates = array('not an int');
         $media->save();
     }
+
+    public function testCreateLiveMedia() 
+    {
+        $media = $this->getDummyMedia(array(
+            'title' => 'Live Media Creation Test',
+            'type' => Media::TYPE_LIVE,
+            'description' => 'Test live media from client',
+            'DescriptionSmall' => 'tag1, tag2',
+            'encoderPrimaryIp' => '127.0.0.1',
+            'encoderBackupIp' => '127.0.0.1',
+            'encoderPassword' => 'test',
+            'bitrates' => array(696, 1096, 2096)
+        ));
+
+        $media->save();
+
+        // Removes test media
+        $media->delete();
+    }
 }
