@@ -13,6 +13,8 @@ class Validator
     const MODIFIER = 'modifier';
 
     const CONSTRAINT_REQUIRED = 'required';
+    const CONSTRAINT_NUMERIC_REQUIRED = 'numeric_required';
+    const CONSTRAINT_NOT_NULL = 'not_null';
 
     const TYPE_INT = 'int';
     const TYPE_ARRAY = 'array';
@@ -118,6 +120,10 @@ class Validator
         switch ($constraint) {
             case self::CONSTRAINT_REQUIRED:
                 return !empty($value);
+            case self::CONSTRAINT_NUMERIC_REQUIRED:
+                return $value === 0 || !empty($value);
+            case self::CONSTRAINT_NOT_NULL:
+                return $value !== null;
             default:
                 return true;
         }
