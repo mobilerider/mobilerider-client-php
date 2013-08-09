@@ -87,9 +87,7 @@ class Media extends ApiObject
         if ($this->isNew()) {
             switch ($this->type) {
                 case self::TYPE_LIVE:
-                    $validators = array_merge_recursive($validators, array(
-                        $streamValidators
-                    ));
+                    $validators = array_merge_recursive($validators, $streamValidators);
                 default:
                     $validators = array_merge_recursive($validators, array());
             }
