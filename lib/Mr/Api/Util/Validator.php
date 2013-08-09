@@ -24,6 +24,7 @@ class Validator
     const MODIFIER_POSITIVE = 'positive';
     const MODIFIER_NEGATIVE = 'negative';
     const MODIFIER_IP = 'ip';
+    const MODIFIER_URL = 'url';
 
     public static function validate($value, array $validators)
     {
@@ -52,7 +53,9 @@ class Validator
         $modifiers = is_array($modifiers) && (empty($modifiers) || isset($modifiers[0])) ? $modifiers : array($modifiers);
 
         foreach ($modifiers as $modifier) {
-            if (!self::applyModifier($value, $modifier)) {
+            // If value is empty none action is taken
+            // For value required validation use constraint required
+            if (!empty($value) && !self::applyModifier($value, $modifier)) {
                 return false;
             }
         }
@@ -91,7 +94,9 @@ class Validator
         $types = is_array($types) && (empty($types) || isset($types[0])) ? $types : array($types);
 
         foreach ($types as $type) {
-            if (isset($type[self::TYPE])) {
+            // If value is empty none action is taken
+            // For value required validation use constraint required
+            if (!empty($value) && isset($type[self::TYPE])) {
                 $typeName = is_array($type) ? $type[self::TYPE] : $type;
                 $method = 'is_' . $typeName;
 
@@ -150,6 +155,8 @@ class Validator
                 return ($value >= 0);
             case self::MODIFIER_NEGATIVE:
                 return ($value < 0);
+            case self::MODIFIER_URL:
+                return filter_var($value, FILTER_VALIDATE_URL);
             default:
                 return true;
         }
