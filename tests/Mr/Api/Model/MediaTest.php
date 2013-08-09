@@ -9,8 +9,8 @@ use Mr\Api\Http\Client;
 
 class MediaTest extends \PHPUnit_Framework_TestCase {
 
-    const HOST = 'api.devmobilerider.com';
-    // const HOST = 'api.devmobilerider.local';
+    // const HOST = 'api.devmobilerider.com';
+    const HOST = 'api.devmobilerider.local';
     const APP_ID = '7af9ca9a0eba0662d5a494a36c0af12a';
     const APP_SECRET = 'f4b6833ac8ce175bd4f5e9a81214a5c20f3aef7680ba64720e514d94102abe39';
 
@@ -98,7 +98,7 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         $this->assertCount($media_count - 1, $this->repo->getAll());
 
         try {
-            $this->assertNull($this->repo->get($id));
+            $this->assertNull($this->repo->get($id)); // Expecting Server error with status: Unknown media
         } catch (\Exception $expected) {
             if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
                 $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
@@ -190,26 +190,30 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
     public function testIgnoredUnknownFields() {
         $media = $this->getDummyMedia(array(
             'title' => 'some nice name here',
+            'description' => 'some necessary description...',
+            'type' => 'Videos',
+            'file' => 'some_url?',
             'an_unknown_field_name' => 'a_value_for_the_unknown_field'
         ));
         $this->assertTrue($media->isNew());
         $this->assertFalse($media->isModified());
+
+        // Api ignores unknown fields so this can not throw any exception
         $media->save();
     }
 
-    // TODO: This could change to a more meaningful/specific exception class
-    /**
-     * @expectedException Mr\Exception\ServerErrorException
-     */
-    public function testExceptionForURLField() {
+    /*public function testExceptionForURLField() {
         $media = $this->getDummyMedia(array(
             'title' => 'some nice name here',
+            'description' => 'some necessary description...',
+            'type' => 'Videos',
+            'file' => 'some_url?',
             'url' => 'a_value_for_the_url_field'
         ));
         $this->assertTrue($media->isNew());
         $this->assertFalse($media->isModified());
         $media->save();
-    }
+    }*/
 
     public function testAsString() {
         $media = $this->getDummyMedia(array('id'=>1, 'title'=>'some_name'));
@@ -220,7 +224,7 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         $my_own_id = 99999998;
 
         try {
-            $this->assertNull($this->repo->get($my_own_id));
+            $this->repo->get($my_own_id);
         } catch (\Exception $expected) {
             if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
                 $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
@@ -237,8 +241,8 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         try {
             $media->save();
         } catch (\Exception $expected) {
-            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
-                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead: ' . var_export($expected, true));
+            if (!is_a($expected, 'Mr\Exception\MultipleServerErrorsException'))
+                $this->fail('Failed to raise a MultipleServerErrorsException, got an ' . get_class($expected) . ' instead: ' . var_export($expected, true));
         }
     }
 
