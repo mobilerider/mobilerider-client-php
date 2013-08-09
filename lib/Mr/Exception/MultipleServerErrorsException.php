@@ -32,18 +32,18 @@ class MultipleServerErrorsException extends MrException
 {
     const MSG_TEMPLATE = 'Error: %s, on %s: %d';
 
-    public function __construct($objects, $method)
+    public function __construct($response, $method)
     {
         $messages = array();
 
         if ($method == AbstractClient::METHOD_POST) {
-            foreach ($objects as $key => $value) {
+            foreach ($response->objects as $key => $value) {
                 if (!$value instanceof ApiObject) {
                     $messages[] = sprintf(self::MSG_TEMPLATE, $value, 'index', $key);
                 }
             }
         } else if ($method == AbstractClient::METHOD_PUT) {
-            foreach ($objects as $value) {
+            foreach ($response->messages as $value) {
                 if (isset($value->index)) {
                     $messages[] = sprintf(self::MSG_TEMPLATE, $value->text, 'index', $value->index);
                 } else {
