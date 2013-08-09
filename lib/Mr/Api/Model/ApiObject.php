@@ -51,10 +51,11 @@ abstract class ApiObject
     public function __construct($repository, $data = null)
     {
         $this->_repo = $repository;
-        if ($data) {
+
+        if (!empty($data)) {
             $this->setData($data);
+            $this->_isModified = false;
         }
-        $this->_isModified = false;
     }
 
     public function getRepository()
@@ -338,6 +339,7 @@ abstract class ApiObject
     {
         if ($data) {
             $this->setData($data);
+            $this->validate();
         }
         $this->_isModified = false;
     }
