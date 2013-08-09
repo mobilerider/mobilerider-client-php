@@ -125,7 +125,7 @@ abstract class ApiRepository
         $success = is_object($response) && self::STATUS_OK == $response->status;
 
         if (!$success && self::MSG_WITH_ERRORS == $response->status) {
-            throw new MultipleServerErrorsException($response->objects, $method);
+            throw new MultipleServerErrorsException($response, $method);
         }
 
         if (!$success && self::STATUS_DENIED_ACCESS == $response->status) {
@@ -321,6 +321,9 @@ abstract class ApiRepository
     {
         if ($method == AbstractClient::METHOD_POST || $method == AbstractClient::METHOD_PUT) {
             $this->validateResponse($response, $method);
+        }
+
+        if ($method == AbstractClient::METHOD_POST) {
             $data = isset($response->objects) ? $response->objects : $response->object;
             $data = !is_array($data) ? array($data) : $data;
         }
