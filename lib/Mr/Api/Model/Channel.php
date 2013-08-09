@@ -2,6 +2,8 @@
 
 namespace Mr\Api\Model;
 
+use Mr\Api\Util\Validator;
+
 /** 
  * Channel Class file
  *
@@ -30,5 +32,16 @@ class Channel extends ApiObject
     public function getStringField()
     {
         return 'name';
+    }
+
+    public function getValidators()
+    {
+        $validators = array(
+            'url' => array(
+                Validator::MODIFIERS => array(Validator::MODIFIER_URL)
+            )
+        );
+
+        return $validators;
     }
 }
