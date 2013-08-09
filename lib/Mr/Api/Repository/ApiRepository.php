@@ -91,6 +91,16 @@ abstract class ApiRepository
     }
 
     /**
+    * Returns current client object
+    *
+    * @return Mr\Api\AbstractClient
+    */
+    public function getClient()
+    {
+        return $this->_client;
+    }
+
+    /**
     * Returns TRUE if given response is valid or throw an exception otherwise
     *
     * @throws DeniedEntityAccessException
@@ -102,6 +112,10 @@ abstract class ApiRepository
     */
     protected function validateResponse($response, $method)
     {
+        if (empty($response)) {
+            throw new InvalidResponseException('Empty response.');
+        }
+
         $responseAttrs = get_object_vars($response);
 
         if (!array_key_exists('status', $responseAttrs)) {
@@ -126,8 +140,10 @@ abstract class ApiRepository
             }
         }
 
-        if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
-            throw new MissingResponseAttributesException(array('object(s)'));
+        if (in_array($method, array(AbstractClient::METHOD_POST, AbstractClient::METHOD_GET))) {
+            if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
+                throw new MissingResponseAttributesException(array('object(s)'));
+            }
         }
 
         return $success;
@@ -194,7 +210,7 @@ abstract class ApiRepository
         
         $response = $this->_client->get($path);
 
-        if ($this->validateResponse($response) && !empty($response->object)) {
+        if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->object)) {
             return $this->create($response->object);
         }
 
@@ -223,7 +239,7 @@ abstract class ApiRepository
                 $metadata = array_merge($metadata, $this->validateMetadata($response));
             }
 
-            if ($this->validateResponse($response) && !empty($response->objects)) {
+            if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->objects)) {
                 foreach ($response->objects as $object) {
                     $results[] = $this->create($object);
                 }

@@ -5,6 +5,7 @@ namespace Mr\Api;
 use Mr\Api\Http\Client;
 use Mr\Api\Collection\ApiObjectCollection;
 use Mr\Api\Model\ApiObject;
+use Mr\Api\Model\Media;
 
 // Exceptions
 use Mr\Api\Exception\InvalidDataOperationException;
@@ -124,5 +125,22 @@ class Service
         $repo = $this->getRepository($model);
 
         return $repo->save($object);
+    }
+
+    // Helpers
+
+    /**
+    * Returns a new live media empty or with given initial data. 
+    * It does not execute any persistent action.
+    *
+    * @param $data object | array
+    * @return Mr\Api\Model\Media
+    */
+    public function createLiveMedia($data = null)
+    {
+        $media = $this->create('Media', $data);
+        $media->type = Media::TYPE_LIVE;
+
+        return $media;
     }
 }
