@@ -62,6 +62,10 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
 		Validator::MODIFIERS => array(Validator::MODIFIER_IP)
 	);
 
+	protected $modifierUrl = array(
+		Validator::MODIFIERS => array(Validator::MODIFIER_URL)
+	);
+
 	public function testConstraints()
 	{
 		$value = null;
@@ -145,5 +149,14 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
 
 		$value = '127.0.0.1';
 		$this->assertTrue(Validator::validate($value, $this->modifierIp));
+
+
+		// URL
+
+		$value = 'not a valid url';
+		$this->assertFalse(Validator::validate($value, $this->modifierUrl));
+
+		$value = 'http://testing.com';
+		$this->assertTrue(Validator::validate($value, $this->modifierUrl));
 	}
 }
