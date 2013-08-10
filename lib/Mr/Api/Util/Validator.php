@@ -4,6 +4,29 @@ namespace Mr\Api\Util;
 
 use Mr\Exception\InvalidFormatException;
 
+/**
+ * Validator Class file
+ *
+ * PHP Version 5.3
+ *
+ * @category Class
+ * @package  Mr\Api\Util
+ * @author   Michel Perez <michel.perez@mobilerider.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
+
+/**
+ * Validator Class
+ *
+ * Application class
+ *
+ * @category Class
+ * @package  Mr\Api\Util
+ * @author   Michel Perez <michel.perez@mobilerider.com>
+ * @license  Copyright (c) 2013 MobileRider Networks LLC
+ * @link     https://github.com/mobilerider/mobilerider-php-sdk/
+ */
 class Validator
 {
     const CONSTRAINTS = 'constraints';
@@ -43,6 +66,14 @@ class Validator
         self::MODIFIER_NESTED => 'contains invalid values'
     );
 
+    /**
+     * Returns invalid message according to given validator and including value string representation
+     * Value is included in the message using the method var_export for better redability
+     *
+     * @param mixed $value Value to include in the message
+     * @param string $validator Validator name which the message is related to
+     * @return string
+     */
     public static function getMessage($value, $validator)
     {
         $message = isset(self::$messages[$validator]) ? self::$messages[$validator] : self::MSG_INVALID_DEFAULT;
@@ -50,6 +81,13 @@ class Validator
         return sprintf(self::MSG_VALUE_PREFIX . $message, var_export($value, true));
     }
 
+    /**
+     * Checks if the given value matches given validators.
+     *
+     * @param mixed $value Value to check
+     * @param array $validator Validator list to match with given value
+     * @return array Tuple with validation status (boolean) and message (string)
+     */
     public static function validate($value, array $validators)
     {
         $valid = true;
