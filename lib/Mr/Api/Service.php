@@ -93,7 +93,7 @@ class Service
     * Returns a all objects from given model.
     *
     * @param $model string 
-    * @return array
+    * @return ApiObjectCollection
     */
     public function getAll($model)
     {
@@ -128,6 +128,26 @@ class Service
     }
 
     // Helpers
+
+    /**
+    * Returns all media objects
+    *
+    * @return ApiObjectCollection
+    */
+    public function getMedias()
+    {
+        return $this->getAll('Media');
+    }
+
+    /**
+    * Returns all channel objects
+    *
+    * @return ApiObjectCollection
+    */
+    public function getChannels()
+    {
+        return $this->getAll('Channel');
+    }
 
     /**
     * Returns a new live media empty or with given initial data. 
