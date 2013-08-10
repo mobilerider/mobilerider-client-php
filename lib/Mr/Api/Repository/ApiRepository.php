@@ -218,39 +218,45 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns a all objects from this model.
+    * Returns a objects from this model according to given filters with lazy load.
     *
     * @param array | null $filters Filters for the server request, only page supported for now
     * @param &array | null $metadata Variable to store objects metadata in
-    * @param boolean $lazy If TRUE this methods sends an inmediate request and returns the results 
-    *        from server otherwise none request is done yet and an ApiObjectCollection is returned
-    * @return ApiObjectCollection | array
+    * @return ApiObjectCollection
     */
-    public function getAll($filters = array(), &$metadata = null, $lazy = true)
+    public function getAll($filters = array(), &$metadata = null)
     {
-        //@TODO: Check metadata provided and lazy flag to avoid any chance of infinite loop
-        if (!$lazy) {
-            $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-            
-            $response = $this->_client->get($path, $this->validateFilters($filters));
-            $results = array();
-
-            if ($metadata !== null && is_array($metadata)) {
-                $metadata = array_merge($metadata, $this->validateMetadata($response));
-            }
-
-            if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->objects)) {
-                foreach ($response->objects as $object) {
-                    $results[] = $this->create($object);
-                }
-            }
-
-            return $results;
-        }
-
         $page = isset($filters['page']) ? $filters['page'] : $this->_metadataDefaults['page'];
 
         return new ApiObjectCollection($this, $page);
+    }
+
+    /**
+    * Returns a objects from this model according with given filters (no lazy load).
+    * Objects are retrieved and returned at once.
+    *
+    * @param array | null $filters Filters for the server request, only page supported for now
+    * @param &array | null $metadata Variable to store objects metadata in
+    * @return array
+    */
+    public function getAllRecords($filters = array(), &$metadata = null)
+    {
+        $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
+            
+        $response = $this->_client->get($path, $this->validateFilters($filters));
+        $results = array();
+
+        if ($metadata !== null && is_array($metadata)) {
+            $metadata = array_merge($metadata, $this->validateMetadata($response));
+        }
+
+        if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->objects)) {
+            foreach ($response->objects as $object) {
+                $results[] = $this->create($object);
+            }
+        }
+
+        return $results;
     }
 
     /**

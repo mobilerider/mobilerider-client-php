@@ -176,10 +176,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
         if (!$this->isPageLoaded($page)) {
             $metadata = $this->getMetadata();
 
-            $objects = $this->_repository->getAll(
+            $objects = $this->_repository->getAllRecords(
                 array('page' => $page),
-                $metadata,
-                false // IMPORTANT, to avoid an infinite loop
+                $metadata
             );
 
             if (!$this->isMetadataUpToDate($metadata)) {
