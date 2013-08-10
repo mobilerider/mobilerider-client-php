@@ -165,7 +165,7 @@ class Validator
         switch ($name) {
             case self::MODIFIER_NESTED:
                 if ((!is_array($value) && !is_object($value)) || empty($value)) {
-                    list($valid, $modifier) = self::validate(null, $modifier[self::MODIFIER_VALIDATORS]);
+                    list($valid, $validator) = self::validate(null, $modifier[self::MODIFIER_VALIDATORS]);
                     return $valid;
                 }
 
