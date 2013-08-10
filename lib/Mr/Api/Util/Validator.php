@@ -11,6 +11,7 @@ class Validator
     const TYPE = 'type';
     const MODIFIERS = 'modifiers';
     const MODIFIER = 'modifier';
+    const NONE = 'none';
 
     const CONSTRAINT_REQUIRED = 'required';
     const CONSTRAINT_NUMERIC_REQUIRED = 'numeric_required';
@@ -28,27 +29,50 @@ class Validator
     const MODIFIER_IP = 'ip';
     const MODIFIER_URL = 'url';
 
+    const MSG_VALUE_PREFIX = 'The value %s ';
+    const MSG_OK = 'The value is valid';
+    const MSG_INVALID_DEFAULT = 'is invalid.';
+
+    public static $messages = array(
+        self::CONSTRAINT_REQUIRED => 'is empty',
+        self::CONSTRAINT_NUMERIC_REQUIRED => 'is empty',
+        self::MODIFIER_POSITIVE => 'is not a positive number',
+        self::MODIFIER_NEGATIVE => 'is not a negative number',
+        self::MODIFIER_IP => 'is not a valid Ip',
+        self::MODIFIER_URL => 'is not a valid Url',
+        self::MODIFIER_NESTED => 'contains invalid values'
+    );
+
+    public static function getMessage($value, $validator)
+    {
+        $message = isset(self::$messages[$validator]) ? self::$messages[$validator] : self::MSG_INVALID_DEFAULT;
+
+        return sprintf(self::MSG_VALUE_PREFIX . $message, var_export($value, true));
+    }
+
     public static function validate($value, array $validators)
     {
-        if (!self::validateConstraints($value, $validators)) {
-            return false;
+        $valid = true;
+
+        if ($valid) {
+            list($valid, $validator) = self::validateConstraints($value, $validators);
         }
 
-        if (!self::validateTypes($value, $validators)) {
-            return false;
+        if ($valid) {
+            list($valid, $validator) = self::validateTypes($value, $validators);
         }
 
-        if (!self::validateModifiers($value, $validators)) {
-            return false;
+        if ($valid) {
+            list($valid, $validator) = self::validateModifiers($value, $validators);
         }
 
-        return true;
+        return $valid ? array($valid, self::MSG_OK) : array($valid, self::getMessage($value, $validator));
     }
 
     private static function validateModifiers($value, $validators)
     {
         if (!is_array($validators) || !isset($validators[self::MODIFIERS])) {
-            return true;
+            return array(true, self::NONE);
         }
 
         $modifiers = is_array($validators) ? $validators[self::MODIFIERS] : array();
@@ -58,38 +82,41 @@ class Validator
             // If value is empty none action is taken
             // For value required validation use constraint required
             if (!empty($value) && !self::applyModifier($value, $modifier)) {
-                return false;
+                $validator = is_array($modifier) ? $modifier[self::MODIFIER] : $modifier;
+                return array(false, $validator);
             }
         }
 
-        return true;
+        return array(true, self::NONE);
     }
 
     private static function validateConstraints($value, $validators)
     {
         if (!is_array($validators) || !isset($validators[self::CONSTRAINTS])) {
-            return true;
+            return array(true, self::NONE);
         }
 
         $constraints = isset($validators[self::CONSTRAINTS]) ? $validators[self::CONSTRAINTS] : array();
 
         foreach ($constraints as $constraint) {
             if (!self::applyConstraint($value, $constraint)) {
-                return false;
+                return array(false, $constraint);
             }
 
-            if (!self::validateModifiers($value, $constraint)) {
-                return false;
+            list($valid, $modifier) = self::validateModifiers($value, $constraint);
+
+            if (!$valid) {
+                return array($valid, $modifier);
             }
         }
 
-        return true;
+        return array(true, self::NONE);
     }
 
     private static function validateTypes($value, array $validators)
     {
         if (!is_array($validators) || !isset($validators[self::TYPES])) {
-            return true;
+            return array(true, self::NONE);
         }
 
         $types = $validators[self::TYPES];
@@ -103,16 +130,18 @@ class Validator
                 $method = 'is_' . $typeName;
 
                 if (!call_user_func_array($method, array($value))) { //@TODO: Allow support for optional types (several type alternatives)
-                    return false;
+                    return array(false, $typeName);
                 }
             }
 
-            if (!self::validateModifiers($value, $type)) {
-                return false;
+            list($valid, $modifier) = self::validateModifiers($value, $type);
+
+            if (!$valid) {
+                return array($valid, $modifier);
             }
         }
 
-        return true;
+        return array(true, self::NONE);
     }
 
     private static function applyConstraint($value, $constraint)
@@ -136,19 +165,22 @@ class Validator
         switch ($name) {
             case self::MODIFIER_NESTED:
                 if ((!is_array($value) && !is_object($value)) || empty($value)) {
-                    return self::validate(null, $modifier[self::MODIFIER_VALIDATORS]);
+                    list($valid, $modifier) = self::validate(null, $modifier[self::MODIFIER_VALIDATORS]);
+                    return $valid;
                 }
 
                 if (is_array($value)) {
                     foreach ($value as $child) {
-                        if (!self::validate($child, $modifier[self::MODIFIER_VALIDATORS])) {
+                        list($valid, $validator) = self::validate($child, $modifier[self::MODIFIER_VALIDATORS]);
+                        if (!$valid) {
                             return false;
                         }
                     }
                 } else if (is_object($value)) {
                     // Assumes validators will be arranged by field names
                     foreach ($modifier[self::MODIFIER_VALIDATORS] as $field => $validator) {
-                        if (!self::validate($value->{$field}, $validator)) {
+                        list($valid, $validator) = self::validate($value->{$field}, $validator);
+                        if (!$valid) {
                             return false;
                         }
                     }

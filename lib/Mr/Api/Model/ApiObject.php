@@ -217,9 +217,10 @@ abstract class ApiObject
 
         foreach ($validators as $field => $validator) {
             $value = isset($this->_data[$field]) ? $this->_data[$field] : null;
+            list($valid, $message) = Validator::validate($value, $validator);
 
-            if (!Validator::validate($value, $validator)) {
-                throw new InvalidFieldException($field, $value, $validator);
+            if (!$valid) {
+                throw new InvalidFieldException($field, $message);
             }
         }
 

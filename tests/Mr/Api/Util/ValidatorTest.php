@@ -69,22 +69,28 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
 	public function testConstraints()
 	{
 		$value = null;
-		$this->assertFalse(Validator::validate($value, $this->requiredValidator));
+		list($valid, $message) = Validator::validate($value, $this->requiredValidator);
+		$this->assertFalse($valid);
 
 		$value = 'not empty';
-		$this->assertTrue(Validator::validate($value, $this->requiredValidator));
+		list($valid, $message) = Validator::validate($value, $this->requiredValidator);
+		$this->assertTrue($valid);
 
 		$value = null;
-		$this->assertFalse(Validator::validate($value, $this->requiredNestedValidator));
+		list($valid, $message) = Validator::validate($value, $this->requiredNestedValidator);
+		$this->assertFalse($valid);
 
 		$value = 'not empty'; // Value must be an array if includes a nested validator
-		$this->assertFalse(Validator::validate($value, $this->requiredNestedValidator));
+		list($valid, $message) = Validator::validate($value, $this->requiredNestedValidator);
+		$this->assertFalse($valid);
 
 		$value = array(); // Array must contains at least one item if nested validator is used
-		$this->assertFalse(Validator::validate($value, $this->requiredNestedValidator));
+		list($valid, $message) = Validator::validate($value, $this->requiredNestedValidator);
+		$this->assertFalse($valid);
 
 		$value = array('not empty');
-		$this->assertTrue(Validator::validate($value, $this->requiredNestedValidator));
+		list($valid, $message) = Validator::validate($value, $this->requiredNestedValidator);
+		$this->assertTrue($valid);
 	}
 
 	public function testNativeTypes()
@@ -92,49 +98,62 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
 		// INTEGER
 
 		$value = 'not an integer';
-		$this->assertFalse(Validator::validate($value, $this->typeInteger));
+		list($valid, $message) = Validator::validate($value, $this->typeInteger);
+		$this->assertFalse($valid);
 
 		$value = 1.5;
-		$this->assertFalse(Validator::validate($value, $this->typeInteger));
+		list($valid, $message) = Validator::validate($value, $this->typeInteger);
+		$this->assertFalse($valid);
 
 		$value = 1;
-		$this->assertTrue(Validator::validate($value, $this->typeInteger));
+		list($valid, $message) = Validator::validate($value, $this->typeInteger);
+		$this->assertTrue($valid);
 
 		$value = -1;
-		$this->assertFalse(Validator::validate($value, $this->typePositiveInteger));
+		list($valid, $message) = Validator::validate($value, $this->typePositiveInteger);
+		$this->assertFalse($valid);
 
 		$value = 1;
-		$this->assertTrue(Validator::validate($value, $this->typePositiveInteger));
+		list($valid, $message) = Validator::validate($value, $this->typePositiveInteger);
+		$this->assertTrue($valid);
 
 		$value = 1;
-		$this->assertFalse(Validator::validate($value, $this->typeNegativeInteger));
+		list($valid, $message) = Validator::validate($value, $this->typeNegativeInteger);
+		$this->assertFalse($valid);
 
 		$value = -1;
-		$this->assertTrue(Validator::validate($value, $this->typeNegativeInteger));
+		list($valid, $message) = Validator::validate($value, $this->typeNegativeInteger);
+		$this->assertTrue($valid);
 
 
 		// ARRAY
 
 		$value = 'not an array';
-		$this->assertFalse(Validator::validate($value, $this->typeArray));
+		list($valid, $message) = Validator::validate($value, $this->typeArray);
+		$this->assertFalse($valid);
 
 		$value = array();
-		$this->assertTrue(Validator::validate($value, $this->typeArray));
+		list($valid, $message) = Validator::validate($value, $this->typeArray);
+		$this->assertTrue($valid);
 
 		$value = 'not an array';
-		$this->assertFalse(Validator::validate($value, $this->typeArray));
+		list($valid, $message) = Validator::validate($value, $this->typeArray);
+		$this->assertFalse($valid);
 
 		$value = array();
-		$this->assertTrue(Validator::validate($value, $this->typeArray));
+		list($valid, $message) = Validator::validate($value, $this->typeArray);
+		$this->assertTrue($valid);
 
 
 		// ARRAY OF INTS
 
 		$value = array('not an integer');
-		$this->assertFalse(Validator::validate($value, $this->typeArrayOfPositiveInts));
+		list($valid, $message) = Validator::validate($value, $this->typeArrayOfPositiveInts);
+		$this->assertFalse($valid);
 
 		$value = array(1);
-		$this->assertTrue(Validator::validate($value, $this->typeArrayOfPositiveInts));
+		list($valid, $message) = Validator::validate($value, $this->typeArrayOfPositiveInts);
+		$this->assertTrue($valid);
 	}
 
 	public function testDataModifiers()
@@ -142,21 +161,26 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
 		// IP
 
 		$value = 'not an ip';
-		$this->assertFalse(Validator::validate($value, $this->modifierIp));
+		list($valid, $message) = Validator::validate($value, $this->modifierIp);
+		$this->assertFalse($valid);
 
 		$value = '127.0000'; // Mallformed ip
-		$this->assertFalse(Validator::validate($value, $this->modifierIp));
+		list($valid, $message) = Validator::validate($value, $this->modifierIp);
+		$this->assertFalse($valid);
 
 		$value = '127.0.0.1';
-		$this->assertTrue(Validator::validate($value, $this->modifierIp));
+		list($valid, $message) = Validator::validate($value, $this->modifierIp);
+		$this->assertTrue($valid);
 
 
 		// URL
 
 		$value = 'not a valid url';
-		$this->assertFalse(Validator::validate($value, $this->modifierUrl));
+		list($valid, $message) = Validator::validate($value, $this->modifierUrl);
+		$this->assertFalse($valid);
 
 		$value = 'http://testing.com';
-		$this->assertTrue(Validator::validate($value, $this->modifierUrl));
+		list($valid, $message) = Validator::validate($value, $this->modifierUrl);
+		$this->assertTrue($valid);
 	}
 }
