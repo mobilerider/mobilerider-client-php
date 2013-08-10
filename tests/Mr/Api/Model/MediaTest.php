@@ -497,4 +497,82 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         // Removes test media
         $media->delete();
     }
+
+    public function testInvalidReturnedLiveMedia() 
+    {
+        $dataOrig = array(
+            'title' => 'Live Media Creation Test',
+            'type' => Media::TYPE_LIVE,
+            'description' => 'Test live media from client',
+            'DescriptionSmall' => 'tag1, tag2',
+            'encoderPrimaryIp' => '127.0.0.1',
+            'encoderBackupIp' => '127.0.0.1',
+            'encoderPassword' => 'test',
+            'bitrates' => array(696, 1096, 2096)
+        );
+
+        $media = $this->getDummyMedia($dataOrig);
+
+        $dataOrig['id'] = 99999;
+
+        $streamOrig = array(
+            'encoderPrimaryIp' => '127.0.0.1',
+            'encoderBackupIp' => '127.0.0.1',
+            'encoderPassword' => 'test',
+            'encoderUsername' => 'user',
+            'entrypoints' => array(
+                'Primary' => 'some.host',
+                'Backup' => 'some.host'
+            )
+        );
+
+        foreach ($streamOrig as $key => $value) {
+            $stream = $streamOrig;
+            $stream[$key] = '';
+            
+            $data = $dataOrig;
+            $data['stream'] = $stream;
+            $data = json_decode(json_encode($data));
+            
+            try {
+                $media->saved($data);
+            } catch (\Exception $ex) {
+                $this->assertInstanceOf('Mr\Exception\InvalidFieldException', $ex);
+                $this->assertEquals('Invalid field: stream. The value ' . var_export($media->stream, true) . ' contains invalid values', $ex->getMessage());
+            } 
+        }
+    }
+
+    public function testReturnedStreamFieldsInLiveMedia() 
+    {
+        $data = array(
+            'title' => 'Live Media Creation Test',
+            'type' => Media::TYPE_LIVE,
+            'description' => 'Test live media from client',
+            'DescriptionSmall' => 'tag1, tag2',
+            'encoderPrimaryIp' => '127.0.0.1',
+            'encoderBackupIp' => '127.0.0.1',
+            'encoderPassword' => 'test',
+            'bitrates' => array(696, 1096, 2096)
+        );
+
+        $media = $this->getDummyMedia($data);
+
+        $stream = array(
+            'encoderPrimaryIp' => '127.0.0.1',
+            'encoderBackupIp' => '127.0.0.1',
+            'encoderPassword' => 'test',
+            'encoderUsername' => 'user',
+            'entrypoints' => array(
+                'Primary' => 'some.host',
+                'Backup' => 'some.host'
+            )
+        );
+
+        $data['id'] = 99999;
+        $data['stream'] = $stream;
+        $data = json_decode(json_encode($data));
+
+        $media->saved($data);
+    }
 }
