@@ -183,4 +183,15 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
 		list($valid, $message) = Validator::validate($value, $this->modifierUrl);
 		$this->assertTrue($valid);
 	}
+
+	public function testMessages()
+	{
+        $this->assertEquals('The value 1 is empty', Validator::getMessage(1, Validator::CONSTRAINT_REQUIRED));
+        $this->assertEquals('The value 1 is empty', Validator::getMessage(1, Validator::CONSTRAINT_NUMERIC_REQUIRED));
+        $this->assertEquals('The value 1 is not a positive number', Validator::getMessage(1, Validator::MODIFIER_POSITIVE));
+        $this->assertEquals('The value 1 is not a negative number', Validator::getMessage(1, Validator::MODIFIER_NEGATIVE));
+        $this->assertEquals('The value 1 is not a valid Ip', Validator::getMessage(1, Validator::MODIFIER_IP));
+        $this->assertEquals('The value 1 is not a valid Url', Validator::getMessage(1, Validator::MODIFIER_URL));
+        $this->assertEquals('The value 1 contains invalid values', Validator::getMessage(1, Validator::MODIFIER_NESTED));
+	}
 }
