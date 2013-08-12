@@ -61,6 +61,10 @@ class Validator
     public static $messages = array(
         self::CONSTRAINT_REQUIRED => 'is empty',
         self::CONSTRAINT_NUMERIC_REQUIRED => 'is empty',
+        self::TYPE_INT => 'is not an integer',
+        self::TYPE_ARRAY => 'is not an array',
+        self::TYPE_NUMERIC => 'is not numeric',
+        self::TYPE_OBJECT => 'is not an object',
         self::MODIFIER_POSITIVE => 'is not a positive number',
         self::MODIFIER_NEGATIVE => 'is not a negative number',
         self::MODIFIER_IP => 'is not a valid Ip',
