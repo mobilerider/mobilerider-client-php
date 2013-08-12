@@ -207,8 +207,8 @@ class ChannelTest extends \PHPUnit_Framework_TestCase {
         try {
             $channel->save();
         } catch (\Exception $expected) {
-            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
-                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+            if (!is_a($expected, 'Mr\Exception\MultipleServerErrorsException'))
+                $this->fail('Failed to raise a MultipleServerErrorsException, got an ' . get_class($expected) . ' instead.');
         }
     }
 
