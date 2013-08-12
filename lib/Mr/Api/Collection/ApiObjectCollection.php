@@ -552,7 +552,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
         $modifiedObjects = array_merge($modifiedObjects, $this->_dirtyObjects);
 
-        $this->_repository->save($modifiedObjects);
+        if (!empty($modifiedObjects)) {
+            $this->_repository->save($modifiedObjects);
+        }
 
         // If new were submitted to be saved, clear cached data (probably invalid now)
         if (!empty($this->_dirtyObjects)) {
