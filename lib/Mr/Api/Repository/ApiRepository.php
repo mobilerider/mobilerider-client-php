@@ -20,6 +20,7 @@ use Mr\Exception\DeniedEntityAccessException;
 use Mr\Exception\MissingResponseAttributesException;
 use Mr\Exception\MultipleServerErrorsException;
 use Mr\Exception\InvalidFiltersException;
+use Mr\Exception\InvalidDataOperationException;
 
 /** 
  * ApiRepository Class file
