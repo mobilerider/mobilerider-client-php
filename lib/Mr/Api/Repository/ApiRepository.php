@@ -19,6 +19,8 @@ use Mr\Exception\InvalidResponseException;
 use Mr\Exception\DeniedEntityAccessException;
 use Mr\Exception\MissingResponseAttributesException;
 use Mr\Exception\MultipleServerErrorsException;
+use Mr\Exception\InvalidFiltersException;
+use Mr\Exception\InvalidDataOperationException;
 
 /** 
  * ApiRepository Class file
@@ -65,7 +67,24 @@ abstract class ApiRepository
         'limit' => 20
     );
     protected $_filterDefaults = array(
-        'page' => 1
+        // pagination filters
+        'page' => 1,
+        'sort' => 'id',
+        'order' => 'asc',
+
+        // data filters
+        'type' => 0,
+        'size' => 0,
+        'hd' => 0,
+        'turbo' => 0,
+        'duration' => 0,
+        'pcount' => 0
+    );
+    protected $_allowedSortings = array(
+        'type',
+        'title',
+        'position',
+        'id',
     );
 
     /**
@@ -168,12 +187,27 @@ abstract class ApiRepository
     {
         $filters = !empty($filters) ? $filters : array();
         $filters = is_array($filters) ? $filters : array($filters);
-        $filters = array_merge($this->_filterDefaults, $filters);
+        $filtersToCheck = array_merge($this->_filterDefaults, $filters);
         
-        $diff = array_diff_key($this->_filterDefaults, $filters);
+        $diff = array_diff_key($filtersToCheck, $this->_filterDefaults);
 
         if (!empty($diff)) {
-            throw new InvalidFiltersException($diff, $array_keys($this->_filterDefaults));
+            throw new InvalidFiltersException(array_keys($diff), array_keys($this->_filterDefaults));
+        }
+
+        if (isset($filters['sort'])) {
+            $sort = $filters['sort'];
+            if (!in_array($sort, $this->_allowedSortings)) {
+                throw new InvalidFiltersException(array($sort), $this->_allowedSortings);
+            }
+        }
+
+        if (isset($filters['order'])) {
+            $order = $filters['order'];
+            $allowed = array('asc', 'desc');
+            if (!in_array($order, $allowed)) {
+                throw new InvalidFiltersException(array($order), $allowed);
+            }
         }
 
         //@TODO: check the type filters
@@ -228,7 +262,7 @@ abstract class ApiRepository
     {
         $page = isset($filters['page']) ? $filters['page'] : $this->_metadataDefaults['page'];
 
-        return new ApiObjectCollection($this, $page);
+        return new ApiObjectCollection($this, $page, $filters);
     }
 
     /**
