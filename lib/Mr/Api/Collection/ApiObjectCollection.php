@@ -23,10 +23,12 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
     protected $_limit;
 
     protected $_repository;
+    protected $_filters;
 
-    public function __construct(ApiRepository $repository, $page = 1)
+    public function __construct(ApiRepository $repository, $page = 1, array $filters = array())
     {
         $this->_repository = $repository;
+        $this->_filters = $filters;
 
         if ($page > 1) {
             $this->setCurrentPage($page);
@@ -177,7 +179,7 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
             $metadata = $this->getMetadata();
 
             $objects = $this->_repository->getAllRecords(
-                array('page' => $page),
+                array_merge($this->_filters, array('page' => $page)),
                 $metadata
             );
 
@@ -550,7 +552,9 @@ class ApiObjectCollection extends AbstractPaginator implements ApiObjectCollecti
 
         $modifiedObjects = array_merge($modifiedObjects, $this->_dirtyObjects);
 
-        $this->_repository->save($modifiedObjects);
+        if (!empty($modifiedObjects)) {
+            $this->_repository->save($modifiedObjects);
+        }
 
         // If new were submitted to be saved, clear cached data (probably invalid now)
         if (!empty($this->_dirtyObjects)) {

@@ -92,14 +92,15 @@ class Service
     /**
     * Returns a all objects from given model.
     *
-    * @param $model string 
+    * @param string $model 
+    * @param array $filters
     * @return ApiObjectCollection
     */
-    public function getAll($model)
+    public function getAll($model, $filters = array())
     {
         $repo = $this->getRepository($model);
 
-        return $repo->getAll();
+        return $repo->getAll($filters);
     }
 
     /**
@@ -132,21 +133,23 @@ class Service
     /**
     * Returns all media objects
     *
+    * @param array $filters
     * @return ApiObjectCollection
     */
-    public function getMedias()
+    public function getMedias($filters = array())
     {
-        return $this->getAll('Media');
+        return $this->getAll('Media', $filters);
     }
 
     /**
     * Returns all channel objects
     *
+    * @param array $filters
     * @return ApiObjectCollection
     */
-    public function getChannels()
+    public function getChannels($filters = array())
     {
-        return $this->getAll('Channel');
+        return $this->getAll('Channel', $filters);
     }
 
     /**

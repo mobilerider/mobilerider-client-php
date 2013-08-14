@@ -40,8 +40,10 @@ class Validator
     const CONSTRAINT_NUMERIC_REQUIRED = 'numeric_required';
     const CONSTRAINT_NOT_NULL = 'not_null';
 
-    const TYPE_INT = 'int';
+    const TYPE_INT = 'integer';
     const TYPE_ARRAY = 'array';
+    const TYPE_NUMERIC = 'numeric';
+    const TYPE_OBJECT = 'object';
 
     const MODIFIER_NESTED = 'nested';
     const MODIFIER_VALIDATORS = 'validators';
@@ -59,6 +61,10 @@ class Validator
     public static $messages = array(
         self::CONSTRAINT_REQUIRED => 'is empty',
         self::CONSTRAINT_NUMERIC_REQUIRED => 'is empty',
+        self::TYPE_INT => 'is not an integer',
+        self::TYPE_ARRAY => 'is not an array',
+        self::TYPE_NUMERIC => 'is not numeric',
+        self::TYPE_OBJECT => 'is not an object',
         self::MODIFIER_POSITIVE => 'is not a positive number',
         self::MODIFIER_NEGATIVE => 'is not a negative number',
         self::MODIFIER_IP => 'is not a valid Ip',
@@ -165,9 +171,9 @@ class Validator
             // For value required validation use constraint required
             if (!empty($value) && isset($type[self::TYPE])) {
                 $typeName = is_array($type) ? $type[self::TYPE] : $type;
-                $method = 'is_' . $typeName;
+                $method = 'is' . ucfirst($typeName);
 
-                if (!call_user_func_array($method, array($value))) { //@TODO: Allow support for optional types (several type alternatives)
+                if (!self::$method($value)) { //@TODO: Allow support for optional types (several type alternatives)
                     return array(false, $typeName);
                 }
             }
@@ -236,5 +242,25 @@ class Validator
             default:
                 return true;
         }
+    }
+
+    public static function isInteger($value) 
+    {
+        return is_numeric($value) && round($value) == $value;
+    }
+
+    public static function isArray($value)
+    {
+        return is_array($value);
+    }
+
+    public static function isObject($value)
+    {
+        return is_object($value);
+    }
+
+    public static function isNumeric($value)
+    {
+        return is_numeric($value);
     }
 }

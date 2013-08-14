@@ -38,7 +38,7 @@ class MultipleServerErrorsException extends MrException
 
         if ($method == AbstractClient::METHOD_POST) {
             foreach ($response->objects as $key => $value) {
-                if (!$value instanceof ApiObject) {
+                if (!is_object($value)) { // If is not an object is because it's an error message
                     $messages[] = sprintf(self::MSG_TEMPLATE, $value, 'index', $key);
                 }
             }
