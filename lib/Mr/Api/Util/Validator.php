@@ -246,8 +246,7 @@ class Validator
 
     public static function isInteger($value) 
     {
-        // On travis tests the method is_int is returning true for a string
-        return is_int($value) && (intval($value) == $value);
+        return is_numeric($value) && round($value) == $value;
     }
 
     public static function isArray($value)
