@@ -87,18 +87,17 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertNotNull($media2);
 
-        // Unsetting `file` attribute so we can compare objects later since
-        // retrieved objects doesn't have a `file` attribute
-        unset($media->file);
-
-        $this->assertEquals($media, $media2);
+        // Compares expecting equqlity only fields setted in the client
+        $this->assertEquals($media->title, $media2->title);        
+        $this->assertEquals($media->description, $media2->description);
+        $this->assertEquals($media->type, $media2->type);
 
         $this->repo->delete($media);
 
         $this->assertCount($media_count - 1, $this->repo->getAll());
 
         try {
-            $this->assertNull($this->repo->get($id)); // Expecting Server error with status: Unknown media
+            $this->repo->get($id); // Expecting Server error with status: Unknown media
         } catch (\Exception $expected) {
             if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
                 $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
@@ -130,7 +129,7 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
 
         $media->delete();
         try {
-            $this->assertNull($this->repo->get($media_id));
+            $this->repo->get($media_id); // Expecting Server error with status: Unknown media
         } catch (\Exception $expected) {
             if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
                 $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
@@ -180,7 +179,8 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
 
         $media->delete();
         try {
-            $this->assertNull($this->repo->get($media_id));
+            $this->repo->get($media_id); // Expecting Server error with status: Unknown media
+            $this->fail('Failed to raise a ServerErrorException, none exception was thrown');
         } catch (\Exception $expected) {
             if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
                 $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
@@ -239,10 +239,11 @@ class MediaTest extends \PHPUnit_Framework_TestCase {
         $this->assertFalse($media->isModified());
 
         try {
-            $media->save();
-        } catch (\Exception $expected) {
-            if (!is_a($expected, 'Mr\Exception\MultipleServerErrorsException'))
-                $this->fail('Failed to raise a MultipleServerErrorsException, got an ' . get_class($expected) . ' instead: ' . var_export($expected, true));
+            $media->save(); // Unknown media server exception
+            $this->fail('Failed to raise a ServerErrorException, none exception was thrown');
+        } catch (\Exception $expected) { 
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead');
         }
     }
 
