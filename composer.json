@@ -1,7 +1,7 @@
 {
-    "name": "mobilerider/mobilerider-php-sdk",
-    "description": "MobileRider API Client SDK",
-    "homepage": "https://github.com/mobilerider/mobilerider-php-sdk",
+    "name": "mobilerider/mobilerider-php-client",
+    "description": "Mobilerider PHP Client",
+    "homepage": "https://github.com/mobilerider/mobilerider-client-php",
     "keywords": ["mobilerider", "client", "api"],
     "version": "1.0",
     "type": "library",
