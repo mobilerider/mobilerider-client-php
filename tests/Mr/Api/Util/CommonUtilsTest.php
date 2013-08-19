@@ -23,7 +23,7 @@ class CommonUtilsTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Mr\Exception\JsonException
-     * @expectedExceptionMessage JSON: Syntax error, malformed JSON
+     * @expectedExceptionMessage JSON Error: Syntax error, malformed JSON. JSON Data: foo?
      */
     public function testDecodeNotJson() {
         $data = CommonUtils::decodeJson('foo?');
@@ -31,7 +31,7 @@ class CommonUtilsTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Mr\Exception\JsonException
-     * @expectedExceptionMessage JSON: Syntax error, malformed JSON
+     * @expectedExceptionMessage JSON Error: Syntax error, malformed JSON. JSON Data: { "status": "ok", }
      */
     public function testDecodeMalformedJson() {
         $data = CommonUtils::decodeJson('{ "status": "ok", }');  // <-- has an extra comma

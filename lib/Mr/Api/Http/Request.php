@@ -91,7 +91,7 @@ class Request extends \HTTP_Request2
     {
         if ($this->method == AbstractClient::METHOD_GET) {
             $this->getUrl()->setQueryVariables($this->_parameters);
-        } else {
+        } else if (in_array($this->method, array(AbstractClient::METHOD_POST, AbstractClient::METHOD_PUT))) {
             $params = array();
 
             foreach ($this->_parameters as $name => $value) {
@@ -104,7 +104,11 @@ class Request extends \HTTP_Request2
                 }
             }
 
-            $this->addPostParameter($params);
+            if ($this->method == AbstractClient::METHOD_POST) {
+                $this->addPostParameter($params);
+            } else {
+                $this->setBody(new \HTTP_Request2_MultipartBody($params, array()));
+            }
         }
 
         $httpResponse = parent::send();
