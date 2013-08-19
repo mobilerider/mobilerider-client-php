@@ -5,6 +5,10 @@ namespace Mr\Api;
 use Mr\Api\Http\Client;
 use Mr\Api\Collection\ApiObjectCollection;
 use Mr\Api\Model\ApiObject;
+use Mr\Api\Model\Media;
+
+// Exceptions
+use Mr\Api\Exception\InvalidDataOperationException;
 
 /** 
  * Service Class file
@@ -39,9 +43,10 @@ class Service
     */
     protected $_client;
 
-    public function __construct($appId, $secret)
+    public function __construct($appId, $secret, $host = '')
     {
-        $this->_client = new Client(self::API_HOST, $appId, $secret);
+        $host = empty($host) ? self::API_HOST : $host;
+        $this->_client = new Client($host, $appId, $secret);
     }
 
     public function getClient()
@@ -87,14 +92,15 @@ class Service
     /**
     * Returns a all objects from given model.
     *
-    * @param $model string 
-    * @return array
+    * @param string $model 
+    * @param array $filters
+    * @return ApiObjectCollection
     */
-    public function getAll($model)
+    public function getAll($model, $filters = array())
     {
         $repo = $this->getRepository($model);
 
-        return $repo->getAll();
+        return $repo->getAll($filters);
     }
 
     /**
@@ -107,9 +113,12 @@ class Service
     {
         if ((is_array($object) || $object instanceof ApiObjectCollection) && count($object)) {
             $firstObject = $object[0];
+        } else {
+            $firstObject = $object;
+        }
+        
+        if ($firstObject instanceof ApiObject) {
             $model = $firstObject->getModel();
-        } else if ($object instanceof ApiObject) {
-            $model = $object->getModel();
         } else {
             throw new InvalidDataOperationException('Invalid object type or empty data', 'Service Save object');
         }
@@ -117,5 +126,44 @@ class Service
         $repo = $this->getRepository($model);
 
         return $repo->save($object);
+    }
+
+    // Helpers
+
+    /**
+    * Returns all media objects
+    *
+    * @param array $filters
+    * @return ApiObjectCollection
+    */
+    public function getMedias($filters = array())
+    {
+        return $this->getAll('Media', $filters);
+    }
+
+    /**
+    * Returns all channel objects
+    *
+    * @param array $filters
+    * @return ApiObjectCollection
+    */
+    public function getChannels($filters = array())
+    {
+        return $this->getAll('Channel', $filters);
+    }
+
+    /**
+    * Returns a new live media empty or with given initial data. 
+    * It does not execute any persistent action.
+    *
+    * @param $data object | array
+    * @return Mr\Api\Model\Media
+    */
+    public function createLiveMedia($data = null)
+    {
+        $media = $this->create('Media', $data);
+        $media->type = Media::TYPE_LIVE;
+
+        return $media;
     }
 }

@@ -4,6 +4,9 @@ namespace Mr\Api\Model;
 
 use Mr\Exception\InvalidRepositoryException;
 use Mr\Exception\InvalidFormatException;
+use Mr\Exception\InvalidFieldException;
+
+use Mr\Api\Util\Validator;
 
 /**
  * ApiObject Class file
@@ -48,10 +51,11 @@ abstract class ApiObject
     public function __construct($repository, $data = null)
     {
         $this->_repo = $repository;
-        if ($data) {
+
+        if (!empty($data)) {
             $this->setData($data);
+            $this->_isModified = false;
         }
-        $this->_isModified = false;
     }
 
     public function getRepository()
@@ -140,6 +144,16 @@ abstract class ApiObject
     }
 
     /**
+    * Returns validators to apply to this object
+    *
+    * @return array
+    */
+    public function getValidators()
+    {
+        array();
+    }
+
+    /**
     * Sets given data as part of this object field values.
     * Data parameter needs to be an object or an array, otherwise
     * an exception is thrown.
@@ -192,8 +206,24 @@ abstract class ApiObject
         $this->setData($data);
     }
 
+    /**
+     * Validates object data
+     *
+     * @return boolean
+     */
     public function validate()
     {
+        $validators = $this->getValidators();
+
+        foreach ($validators as $field => $validator) {
+            $value = isset($this->_data[$field]) ? $this->_data[$field] : null;
+            list($valid, $message) = Validator::validate($value, $validator);
+
+            if (!$valid) {
+                throw new InvalidFieldException($field, $message);
+            }
+        }
+
         return self::STATUS_VALID;
     }
 
@@ -251,7 +281,6 @@ abstract class ApiObject
 
     public function __get($name)
     {
-        $name = strtolower($name);
         return array_key_exists($name, $this->_data) ? $this->_data[$name] : null;
     }
 
@@ -265,7 +294,6 @@ abstract class ApiObject
      */
     public function __set($name, $value)
     {
-        $name = strtolower($name);
         $oldValue = $this->{$name};
 
         if ($modified = $oldValue !== $value) {
@@ -273,6 +301,17 @@ abstract class ApiObject
         }
 
         $this->_isModified = $this->_isModified || $modified;
+    }
+
+    /**
+     * <b>Magic method</b>. Unsets a property
+     *
+     * @param string $name property name
+     *
+     * @return void
+     */
+    public function __unset($name) {
+        unset($this->_data[$name]);
     }
 
     /**
@@ -284,7 +323,6 @@ abstract class ApiObject
      */
     public function __isset($name)
     {
-        $name = strtolower($name);
         return array_key_exists($name, $this->_data);
     }
 
@@ -302,6 +340,7 @@ abstract class ApiObject
     {
         if ($data) {
             $this->setData($data);
+            $this->validate();
         }
         $this->_isModified = false;
     }

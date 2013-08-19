@@ -11,7 +11,7 @@ class CommonUtils
         $data = json_decode($json);
 
         if (JSON_ERROR_NONE != ($jsonError = json_last_error())) {
-            throw new JsonException($jsonError);
+            throw new JsonException($jsonError, $json);
         }
 
         return $data;
@@ -22,7 +22,7 @@ class CommonUtils
         $json = json_encode($data);
 
         if (JSON_ERROR_NONE != ($jsonError = json_last_error())) {
-            throw new JsonException($jsonError);
+            throw new JsonException($jsonError, $json);
         }
 
         return $json;

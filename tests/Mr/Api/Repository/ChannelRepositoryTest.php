@@ -166,7 +166,7 @@ class ChannelRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repo = new ChannelRepository($this->_client);
         $metadata = array();
-        $channels = $repo->getAll(null, $metadata, false);
+        $channels = $repo->getAllRecords(null, $metadata);
 
         // Checking response (validating specific url was matched)
         \PHPUnit_Framework_Assert::assertTrue($this->_client->getResponse()->isOK());
@@ -298,7 +298,7 @@ class ChannelRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $repo = new ChannelRepository($this->_client);
         $metadata = array();
-        $channels = $repo->getAll(null, $metadata, false);
+        $channels = $repo->getAllRecords(null, $metadata);
 
         \PHPUnit_Framework_Assert::assertEquals($this->channelsData['meta'], $metadata);
     }

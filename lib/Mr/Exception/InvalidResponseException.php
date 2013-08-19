@@ -27,8 +27,8 @@ namespace Mr\Exception;
  */
 class InvalidResponseException extends MrException
 {
-    public function __construct()
+    public function __construct($message = '')
     {
-        parent::__construct('Invalid response from api server');
+        parent::__construct('Invalid response from api server. ' . $message);
     }
 }

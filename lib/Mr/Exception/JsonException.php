@@ -27,7 +27,7 @@ namespace Mr\Exception;
  */
 class JsonException extends MrException
 {
-    public function __construct($jsonError)
+    public function __construct($jsonError, $json = '')
     {
         switch ($jsonError) {
             case JSON_ERROR_NONE:
@@ -53,6 +53,6 @@ class JsonException extends MrException
             break;
         }
 
-        parent::__construct('JSON: '. $message);
+        parent::__construct('JSON Error: '. $message . '. JSON Data: ' . $json);
     }
 }

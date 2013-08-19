@@ -18,6 +18,9 @@ use Mr\Exception\ServerErrorException;
 use Mr\Exception\InvalidResponseException;
 use Mr\Exception\DeniedEntityAccessException;
 use Mr\Exception\MissingResponseAttributesException;
+use Mr\Exception\MultipleServerErrorsException;
+use Mr\Exception\InvalidFiltersException;
+use Mr\Exception\InvalidDataOperationException;
 
 /** 
  * ApiRepository Class file
@@ -51,6 +54,8 @@ abstract class ApiRepository
     const STATUS_NOT_FOUND_PATTERN = 'Unknown %s';
     const STATUS_DENIED_ACCESS = 'Access denied';
 
+    const MSG_WITH_ERRORS = "Some errors ocurred during this action.";
+
     /**
     * var ClientInterface
     */
@@ -62,7 +67,24 @@ abstract class ApiRepository
         'limit' => 20
     );
     protected $_filterDefaults = array(
-        'page' => 1
+        // pagination filters
+        'page' => 1,
+        'sort' => 'id',
+        'order' => 'asc',
+
+        // data filters
+        'type' => 0,
+        'size' => 0,
+        'hd' => 0,
+        'turbo' => 0,
+        'duration' => 0,
+        'pcount' => 0
+    );
+    protected $_allowedSortings = array(
+        'type',
+        'title',
+        'position',
+        'id',
     );
 
     /**
@@ -88,6 +110,16 @@ abstract class ApiRepository
     }
 
     /**
+    * Returns current client object
+    *
+    * @return Mr\Api\AbstractClient
+    */
+    public function getClient()
+    {
+        return $this->_client;
+    }
+
+    /**
     * Returns TRUE if given response is valid or throw an exception otherwise
     *
     * @throws DeniedEntityAccessException
@@ -97,21 +129,25 @@ abstract class ApiRepository
     * @param $response mixed
     * @return boolean
     */
-    protected function validateResponse($response)
+    protected function validateResponse($response, $method)
     {
+        if (empty($response)) {
+            throw new InvalidResponseException('Empty response.');
+        }
+
         $responseAttrs = get_object_vars($response);
 
         if (!array_key_exists('status', $responseAttrs)) {
             throw new MissingResponseAttributesException(array('status'));
-        }        
+        }
 
-        $success = is_object($response) && (
-            self::STATUS_OK == $response->status ||
-            // Avoid throwing exception if the entity was not found, instead return null
-            sprintf(self::STATUS_NOT_FOUND_PATTERN, strtolower($this->getModel())) == $response->status
-        );
+        $success = is_object($response) && self::STATUS_OK == $response->status;
 
-        if (!$success && is_object($response) && self::STATUS_DENIED_ACCESS == $response->status) {
+        if (!$success && self::MSG_WITH_ERRORS == $response->status) {
+            throw new MultipleServerErrorsException($response, $method);
+        }
+
+        if (!$success && self::STATUS_DENIED_ACCESS == $response->status) {
             throw new DeniedEntityAccessException();
         } 
 
@@ -123,8 +159,10 @@ abstract class ApiRepository
             }
         }
 
-        if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
-            throw new MissingResponseAttributesException(array('object(s)'));
+        if (in_array($method, array(AbstractClient::METHOD_POST, AbstractClient::METHOD_GET))) {
+            if (!array_key_exists('objects', $responseAttrs) && !array_key_exists('object', $responseAttrs)) {
+                throw new MissingResponseAttributesException(array('object(s)'));
+            }
         }
 
         return $success;
@@ -149,12 +187,27 @@ abstract class ApiRepository
     {
         $filters = !empty($filters) ? $filters : array();
         $filters = is_array($filters) ? $filters : array($filters);
-        $filters = array_merge($this->_filterDefaults, $filters);
+        $filtersToCheck = array_merge($this->_filterDefaults, $filters);
         
-        $diff = array_diff_key($this->_filterDefaults, $filters);
+        $diff = array_diff_key($filtersToCheck, $this->_filterDefaults);
 
         if (!empty($diff)) {
-            throw new InvalidFiltersException($diff, $array_keys($this->_filterDefaults));
+            throw new InvalidFiltersException(array_keys($diff), array_keys($this->_filterDefaults));
+        }
+
+        if (isset($filters['sort'])) {
+            $sort = $filters['sort'];
+            if (!in_array($sort, $this->_allowedSortings)) {
+                throw new InvalidFiltersException(array($sort), $this->_allowedSortings);
+            }
+        }
+
+        if (isset($filters['order'])) {
+            $order = $filters['order'];
+            $allowed = array('asc', 'desc');
+            if (!in_array($order, $allowed)) {
+                throw new InvalidFiltersException(array($order), $allowed);
+            }
         }
 
         //@TODO: check the type filters
@@ -191,7 +244,7 @@ abstract class ApiRepository
         
         $response = $this->_client->get($path);
 
-        if ($this->validateResponse($response) && !empty($response->object)) {
+        if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->object)) {
             return $this->create($response->object);
         }
 
@@ -199,39 +252,45 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns a all objects from this model.
+    * Returns a objects from this model according to given filters with lazy load.
     *
     * @param array | null $filters Filters for the server request, only page supported for now
     * @param &array | null $metadata Variable to store objects metadata in
-    * @param boolean $lazy If TRUE this methods sends an inmediate request and returns the results 
-    *        from server otherwise none request is done yet and an ApiObjectCollection is returned
-    * @return ApiObjectCollection | array
+    * @return ApiObjectCollection
     */
-    public function getAll($filters = array(), &$metadata = null, $lazy = true)
+    public function getAll($filters = array(), &$metadata = null)
     {
-        //@TODO: Check metadata provided and lazy flag to avoid any chance of infinite loop
-        if (!$lazy) {
-            $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-            
-            $response = $this->_client->get($path, $this->validateFilters($filters));
-            $results = array();
-
-            if ($metadata !== null && is_array($metadata)) {
-                $metadata = array_merge($metadata, $this->validateMetadata($response));
-            }
-
-            if ($this->validateResponse($response) && !empty($response->objects)) {
-                foreach ($response->objects as $object) {
-                    $results[] = $this->create($object);
-                }
-            }
-
-            return $results;
-        }
-
         $page = isset($filters['page']) ? $filters['page'] : $this->_metadataDefaults['page'];
 
-        return new ApiObjectCollection($this, $page);
+        return new ApiObjectCollection($this, $page, $filters);
+    }
+
+    /**
+    * Returns a objects from this model according with given filters (no lazy load).
+    * Objects are retrieved and returned at once.
+    *
+    * @param array | null $filters Filters for the server request, only page supported for now
+    * @param &array | null $metadata Variable to store objects metadata in
+    * @return array
+    */
+    public function getAllRecords($filters = array(), &$metadata = null)
+    {
+        $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
+            
+        $response = $this->_client->get($path, $this->validateFilters($filters));
+        $results = array();
+
+        if ($metadata !== null && is_array($metadata)) {
+            $metadata = array_merge($metadata, $this->validateMetadata($response));
+        }
+
+        if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->objects)) {
+            foreach ($response->objects as $object) {
+                $results[] = $this->create($object);
+            }
+        }
+
+        return $results;
     }
 
     /**
@@ -287,8 +346,11 @@ abstract class ApiRepository
             $object = $objects[0];
             $data = $object->getData();
         } else {
+            $data = array();
+
             foreach ($objects as $object) {
-                $data[] = $object->getData();
+                $objectData = $object->getData();
+                $data[] = $objectData;
             }
         }
 
@@ -297,8 +359,11 @@ abstract class ApiRepository
 
     protected function postSave($response, $object, $method)
     {
+        if ($method == AbstractClient::METHOD_POST || $method == AbstractClient::METHOD_PUT) {
+            $this->validateResponse($response, $method);
+        }
+
         if ($method == AbstractClient::METHOD_POST) {
-            $this->validateResponse($response);
             $data = isset($response->objects) ? $response->objects : $response->object;
             $data = !is_array($data) ? array($data) : $data;
         }
