@@ -29,8 +29,8 @@ To use the classes provided by this library you just have to initialize them usi
 
     $api_client = new Client(MOBILERIDER_HOST, MOBILERIDER_APP_ID, MOBILERIDER_APP_SECRET);
 
-    // So we want get some channels...
+    // So we want to get some channels...
     $channel_repository = new ChannelRepository($api_client);
     foreach ($channel_repository->->getAll() as $my_channel) {
-        do_something_with($my_channel);
+        doSomethingWith($my_channel);
     }
