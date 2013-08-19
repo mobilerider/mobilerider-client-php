@@ -5,7 +5,7 @@ namespace MrTest\Api\Util;
 use Mr\Api\Util\Validator;
 
 
-class ValidatorTest extends \PHPUnit_Framework_TestCase 
+class ValidatorTest extends \PHPUnit_Framework_TestCase
 {
 	protected $requiredValidator = array(
 		Validator::CONSTRAINTS => array(Validator::CONSTRAINT_REQUIRED)

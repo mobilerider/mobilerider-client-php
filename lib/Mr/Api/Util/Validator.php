@@ -164,12 +164,12 @@ class Validator
         }
 
         $types = $validators[self::TYPES];
-        $types = is_array($types) && (empty($types) || isset($types[0])) ? $types : array($types);
+        $types = (is_array($types) && (empty($types) || isset($types[0]))) ? $types : array($types);
 
         foreach ($types as $type) {
-            // If value is empty none action is taken
+            // If value is empty no action is taken
             // For value required validation use constraint required
-            if (!empty($value) && isset($type[self::TYPE])) {
+            if (!empty($value) && (!is_array($type) || isset($type[self::TYPE]))) {
                 $typeName = is_array($type) ? $type[self::TYPE] : $type;
                 $method = 'is' . ucfirst($typeName);
 
@@ -244,7 +244,7 @@ class Validator
         }
     }
 
-    public static function isInteger($value) 
+    public static function isInteger($value)
     {
         return is_numeric($value) && round($value) == $value;
     }
