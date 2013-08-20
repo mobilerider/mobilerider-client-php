@@ -48,7 +48,7 @@ But, again, this changes are not yet on the server; you only have to call `save(
 
     $media->delete();
 
-The the object will be erased from the server, but keep in mind the `$media` variable still holds a reference to the in-memory object so be careful to not reference the contents of this variable any more.
+The object will be erased from the server, but keep in mind the `$media` variable still holds a reference to the in-memory object so be careful to not reference the contents of this variable any more.
 
 
 ### Live Media objects
@@ -82,11 +82,42 @@ So you can use these attributes by direct access:
 
 If you need to inspect all data available returned by the API, you can use the `getData()` method to retrieve it.
 
+## How to filter media objects.
+
+Calling the method `getAll()` from the repository instance we can retrieve all existent media objects, however this method accept a first parameter of type array which may include all avilable filters in the format array(`key1` => `value`, `key2` => `value`).
+
+For example in order to retrieve all live medias, you can set up the filter `type` with the according related media live type:
+
+    $repository->getAll(array('type' => 6)); // Returns all live medias
+
+You can pass multiple filters at the same time:
+
+    $repository->getAll(array('type' => 6, 'hd' => true)); // Returns all live medias that support high definition
+
+### Available filters, description and allowed data for each one of them:
+    *   [type]: Media type.
+        > Any of the following integers:
+        >> 1 (Photos) 
+        >> 2 (Videos) 
+        >> 5 (Music) 
+        >> 6 (Live Video)
+        >> 7 (Video Segment)
+
+    *   [size]: Video size.
+        > Any possitive integer.
+
+    *   [hd]: High definition.
+        > A boolean value, if True it will return medias that allow high definition quality.
+
+    *   [duration]: Media duration in seconds
+        > Any possitive integer.
+
+    *   [pcount]: Media player view counts. It represents the number of types a media has been viewed.
+        > Any possitive integer.
 
 ## Documentation TODO
 
 * All available fields for modifications
-* Filtering
 * Collections
 * Pagination
 * More about encoding attributes
