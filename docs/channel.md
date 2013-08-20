@@ -2,7 +2,7 @@
 
 Channels are simple groups to group/categorize [media objects](media.md)
 
-## Here's a simple example to create a channel object
+### Here's a simple example to create a channel object
 
 Include necessary classes (this depends on autoload configured correctly):
 
@@ -46,7 +46,7 @@ But, again, this changes are not yet on the server; you only have to call `save(
 The the object will be erased from the server, but keep in mind the `$channel` variable still holds a reference to the in-memory object so be careful to not reference the contents of this variable any more.
 
 
-# Documentation TODO
+## Documentation TODO
 
 * All available fields for modifications
 * Filtering

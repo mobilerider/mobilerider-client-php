@@ -1,6 +1,6 @@
 # Media objects
 
-## Here's a simple example to create a live media object
+### Here's a simple example to create a live media object
 
 Include necessary classes (this depends on autoload configured correctly):
 
@@ -51,7 +51,32 @@ But, again, this changes are not yet on the server; you only have to call `save(
 The the object will be erased from the server, but keep in mind the `$media` variable still holds a reference to the in-memory object so be careful to not reference the contents of this variable any more.
 
 
-# Documentation TODO
+### Live Media objects
+
+When an media object is created the server returns additional fields (and some of them are read-only). In the case of live media objects, there are some important fields to take into account, like those under the `stream` attribute (specially `encoderPrimaryIp`, `encoderBackupIp`, `encoderUsername` and `encoderPassword`). Using the above example:
+
+    var_dump($media->stream);
+    >>> {
+    >>>   $id => "23423"
+    >>>   $name =>"78986"
+    >>>   $primary-contact =>"John Doe"
+    >>>   $secondary-contact =>"John Doe"
+    >>>   $status =>"Not yet provisioned"
+    >>>   $email =>"my@email.address"
+    >>>   $encoderPrimaryIp =>"127.0.0.1"
+    >>>   $encoderBackupIp =>"127.0.0.1"
+    >>>   $encoderUsername =>"183198"
+    >>>   $encoderPassword =>"test"
+    >>>   $entrypoints => {
+    >>>     public $Backup => "b.ep137525.i.akamaientrypoint.net"
+    >>>     public $Primary => "p.ep137525.i.akamaientrypoint.net"
+    >>>   }
+    >>> }
+
+If you need to inspect all data available returned by the API, you can use the `getData()` method to retrieve it.
+
+
+## Documentation TODO
 
 * All available fields for modifications
 * Filtering
