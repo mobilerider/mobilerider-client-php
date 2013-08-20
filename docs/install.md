@@ -4,15 +4,17 @@ In your `composer.json`, declare a new repository from Github and add the requir
 
     {
         "repositories": [
-            // ...
+            // The library depends on some other libraries from PEAR
+            // So it's necessary to include this if it's not already
             {
-                "type": "vcs",
-                "url": "https://github.com/mobilerider/mobilerider-client-php"
+                "type": "pear",
+                "url": "http://pear.php.net",
+                "vendor-alias": "pear"
             }
         ],
         "require": {
             // ...
-            "mobilerider/mobilerider-client-php": "dev-develop"
+            "mobilerider/mobilerider-client-php": "1.0"
         }
     }
 
