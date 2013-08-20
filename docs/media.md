@@ -112,7 +112,7 @@ You can pass multiple filters at the same time:
     *   [duration]: Media duration in seconds
         > Any possitive integer.
 
-    *   [pcount]: Media player view counts. It represents the number of types a media has been viewed.
+    *   [pcount]: Media player view counts. It represents the number of times a media has been viewed.
         > Any possitive integer.
 
 ## Documentation TODO
