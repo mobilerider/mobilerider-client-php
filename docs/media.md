@@ -73,6 +73,13 @@ When an media object is created the server returns additional fields (and some o
     >>>   }
     >>> }
 
+So you can use these attributes by direct access:
+
+    print($media->stream->encoderUsername);   // Prints "183198"
+    print($media->stream->encoderPassword);   // Prints "test"
+    print($media->stream->encoderPrimaryIp);  // Prints "127.0.0.1"
+    print($media->stream->encoderBackupIp);   // Prints "127.0.0.1"
+
 If you need to inspect all data available returned by the API, you can use the `getData()` method to retrieve it.
 
 
