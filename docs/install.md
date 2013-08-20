@@ -33,6 +33,6 @@ To use the classes provided by this library you just have to initialize them usi
 
     // So we want to get some channels...
     $channel_repository = new ChannelRepository($api_client);
-    foreach ($channel_repository->->getAll() as $my_channel) {
+    foreach ($channel_repository->getAll() as $my_channel) {
         doSomethingWith($my_channel);
     }
