@@ -1,4 +1,5 @@
 # Mobilerider API: PHP Client
 
 * [Install & Configuration](install.md)
-* [Media objects examples](media.md)
+* [Media object examples](media.md)
+* [Channel object examples](channel.md)

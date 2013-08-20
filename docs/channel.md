@@ -1,12 +1,14 @@
-# Media objects
+# Channel objects
 
-## Here's a simple example to create a live media object
+Channels are simple groups to group/categorize [media objects](media.md)
+
+## Here's a simple example to create a channel object
 
 Include necessary classes (this depends on autoload configured correctly):
 
     use Mr\Api\Http\Client;
-    use Mr\Api\Model\Media;
-    use Mr\Api\Repository\MediaRepository;
+    use Mr\Api\Model\Channel;
+    use Mr\Api\Repository\ChannelRepository;
 
 These are credentials to authenticate within the API:
 
@@ -20,35 +22,28 @@ Instantiate the client:
 
 Instantiate the repository. This object is used for "group level" operations like object creation, retrieving a (optionally filtered) collection of objects, etc.
 
-    $repository = new MediaRepository($client);
+    $repository = new ChannelRepository($client);
 
-Now we can use this repository to create a new Live Media object:
+Now we can use this repository to create a new Channel object:
 
-    $media = $repository->create(array(
-        'title' => 'Live Media Creation Test',
-        'type' => Media::TYPE_LIVE,
-        'description' => 'Test live media from client',
-        'DescriptionSmall' => 'tag1, tag2',
-        'encoderPrimaryIp' => '127.0.0.1',
-        'encoderBackupIp' => '127.0.0.1',
-        'encoderPassword' => 'test',
-        'bitrates' => array(696, 1096, 2096)
+    $channel = $repository->create(array(
+        'name' => 'My Channel'
     ));
 
 But this object is not yet posted to the API server, so let's call `save()` to do so:
 
-    $media->save();
+    $channel->save();
 
 We can alter allowed fields afterwards, by simply assigning them a value:
 
-    $media->title = "A new title for my media object";
-    $media->description = "Also, a new description";
+    $channel->title = "A new title for my media object";
+    $channel->description = "Also, a new description";
 
 But, again, this changes are not yet on the server; you only have to call `save()` when you are done. To delete an object, just call the `delete()` method on the object:
 
-    $media->delete();
+    $channel->delete();
 
-The the object will be erased from the server, but keep in mind the `$media` variable still holds a reference to the in-memory object so be careful to not reference the contents of this variable any more.
+The the object will be erased from the server, but keep in mind the `$channel` variable still holds a reference to the in-memory object so be careful to not reference the contents of this variable any more.
 
 
 # Documentation TODO
@@ -57,5 +52,3 @@ The the object will be erased from the server, but keep in mind the `$media` var
 * Filtering
 * Collections
 * Pagination
-* More about encoding attributes
-* Media status
