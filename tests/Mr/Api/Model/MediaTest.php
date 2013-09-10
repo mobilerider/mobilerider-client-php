@@ -7,18 +7,13 @@ use Mr\Api\Repository\MediaRepository;
 use Mr\Api\Http\Client;
 
 
-class MediaTest extends \PHPUnit_Framework_TestCase {
-
-    const HOST = 'http://api.devmobilerider.com';
-    //const HOST = 'api.devmobilerider.local';
-    const APP_ID = '7af9ca9a0eba0662d5a494a36c0af12a';
-    const APP_SECRET = 'f4b6833ac8ce175bd4f5e9a81214a5c20f3aef7680ba64720e514d94102abe39';
-
+class MediaTest extends \PHPUnit_Framework_TestCase 
+{
     protected $client = null;
     protected $repo = null;
 
     public function setUp() {
-        $this->client = new Client(self::HOST, self::APP_ID, self::APP_SECRET);
+        $this->client = new Client(APP_HOST, APP_ID, APP_SECRET);
         $this->repo = new MediaRepository($this->client);
     }
 
