@@ -9,7 +9,7 @@ use Mr\Api\Http\Client;
 
 class MediaTest extends \PHPUnit_Framework_TestCase {
 
-    const HOST = 'api.devmobilerider.com';
+    const HOST = 'http://api.devmobilerider.com';
     //const HOST = 'api.devmobilerider.local';
     const APP_ID = '7af9ca9a0eba0662d5a494a36c0af12a';
     const APP_SECRET = 'f4b6833ac8ce175bd4f5e9a81214a5c20f3aef7680ba64720e514d94102abe39';
