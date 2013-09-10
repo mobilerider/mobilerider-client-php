@@ -1,5 +1,5 @@
 {
-    "name": "mobilerider/mobilerider-php-client",
+    "name": "mobilerider/mobilerider-client-php",
     "description": "Mobilerider PHP Client",
     "homepage": "https://github.com/mobilerider/mobilerider-client-php",
     "keywords": ["mobilerider", "client", "api"],
