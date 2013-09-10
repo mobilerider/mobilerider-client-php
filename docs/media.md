@@ -10,7 +10,7 @@ Include necessary classes (this depends on autoload configured correctly):
 
 These are credentials to authenticate within the API:
 
-    define('MOBILERIDER_HOST', 'api.devmobilerider.com');
+    define('MOBILERIDER_HOST', 'api.mobilerider.com');
     define('MOBILERIDER_APP_ID', 'your-application-id-goes-here');
     define('MOBILERIDER_APP_SECRET', 'your-application-secret-goes-here');
 
