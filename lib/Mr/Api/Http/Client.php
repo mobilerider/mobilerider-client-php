@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Mr\Api\Http;
 
@@ -8,7 +8,7 @@ use Mr\Api\ClientAdapterInterface;
 use Mr\Api\Http\Adapter\BaseAdapter;
 use Mr\Exception\InvalidTypeException;
 
-/** 
+/**
  * Client Class file
  *
  * PHP Version 5.3
@@ -89,7 +89,7 @@ class Client extends AbstractClient implements ClientInterface
 
     protected function getUrl($path)
     {
-        return sprintf('http://%s/%s', $this->_host, $path);
+        return sprintf('https://%s/%s', $this->_host, $path);
     }
 
     protected function call($method, $path, $parameters, $headers, $config)
@@ -97,7 +97,7 @@ class Client extends AbstractClient implements ClientInterface
         $config = array_merge($this->_config, $config);
 
         $this->_request = new Request($this->getUrl($path), $method, $config);
-        
+
         if (!empty($this->_username)) {
             $this->_request->setAuth($this->_username, $this->_password, \HTTP_Request2::AUTH_BASIC);
         }
@@ -110,7 +110,7 @@ class Client extends AbstractClient implements ClientInterface
         $this->_request->setParameter($parameters);
 
         $this->_response = $this->_request->send();
-        
+
         return $this->_response->getContent();
     }
 
@@ -140,11 +140,11 @@ class Client extends AbstractClient implements ClientInterface
     public function get($path, array $parameters = array(), array $headers = array(), $config = array())
     {
         return $this->call(AbstractClient::METHOD_GET, $path, $parameters, $headers, $config);
-    }   
-    
+    }
+
     /**
     * {@inheritdoc }
-    */    
+    */
     public function post($path, array $parameters = array(), array $headers = array(), $config = array())
     {
         return $this->call(AbstractClient::METHOD_POST, $path, $parameters, $headers, $config);
