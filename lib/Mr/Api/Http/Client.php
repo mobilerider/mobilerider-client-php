@@ -7,6 +7,7 @@ use Mr\Api\AbstractClient;
 use Mr\Api\ClientAdapterInterface;
 use Mr\Api\Http\Adapter\BaseAdapter;
 use Mr\Exception\InvalidTypeException;
+use Mr\Exception\InvalidDataOperationException;
 
 /** 
  * Client Class file
@@ -89,7 +90,19 @@ class Client extends AbstractClient implements ClientInterface
 
     protected function getUrl($path)
     {
-        return sprintf('http://%s/%s', $this->_host, $path);
+        $protocol = 'https://';
+
+        if (preg_match('/^https?:\/\/[\w]+/', $this->_host)) {
+            $protocol = '';
+        }
+
+        $url = sprintf('%s%s/%s', $protocol, $this->_host, $path);
+
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new InvalidDataOperationException("Invalid Url", 'Computing Url on client');
+        }
+
+        return $url;
     }
 
     protected function call($method, $path, $parameters, $headers, $config)
