@@ -40,6 +40,9 @@ class Request extends \HTTP_Request2
             unset($config['dataType']);
         }
 
+        $config['ssl_verify_peer'] = false;
+        $config['ssl_verify_host'] = false;
+
         parent::__construct($url, $method, $config);
     }
 
