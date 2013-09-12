@@ -25,6 +25,9 @@ Then execute `composer install` to make Composer install the library and its dep
 
 To use the classes provided by this library you just have to initialize them using a `Client` instance. This client is created with your corresponding application ID/Secret pair:
 
+    use Mr\Api\Http\Client;
+    use Mr\Api\Repository\ChannelRepository;
+
     define('MOBILERIDER_HOST', 'api.mobilerider.com');
     define('MOBILERIDER_APP_ID', 'your-application-id-goes-here');
     define('MOBILERIDER_APP_SECRET', 'your-application-secret-goes-here');
