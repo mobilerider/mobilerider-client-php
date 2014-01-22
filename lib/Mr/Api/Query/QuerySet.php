@@ -28,28 +28,28 @@ function Q(array $filters, array $exclude = array(), array $fields = array())
  * Class QuerySet
  * @package Mr\Api\Query
  *
- * @method QuerySet exact($field, $value)
- * @method QuerySet contains($field, $value)
- * @method QuerySet in($field, $value)
- * @method QuerySet startsWidth($field, $value)
- * @method QuerySet endsWidth($field, $value)
- * @method QuerySet isNull($field, $value)
- * @method QuerySet iExact($field, $value)
- * @method QuerySet iStartsWith($field, $value)
- * @method QuerySet iEndsWith($field, $value)
- * @method QuerySet gt($field, $value)
- * @method QuerySet gte($field, $value)
- * @method QuerySet lt($field, $value)
- * @method QuerySet lte($field, $value)
- * @method QuerySet regex($field, $value)
- * @method QuerySet range($field, $value)
- * @method QuerySet year($field, $value)
- * @method QuerySet month($field, $value)
- * @method QuerySet day($field, $value)
- * @method QuerySet hour($field, $value)
- * @method QuerySet minute($field, $value)
- * @method QuerySet second($field, $value)
- * @method QuerySet weekDay($field, $value)
+ * @method \Mr\Api\Query\QuerySet exact($field, $value)
+ * @method \Mr\Api\Query\QuerySet contains($field, $value)
+ * @method \Mr\Api\Query\QuerySet in($field, $value)
+ * @method \Mr\Api\Query\QuerySet startsWidth($field, $value)
+ * @method \Mr\Api\Query\QuerySet endsWidth($field, $value)
+ * @method \Mr\Api\Query\QuerySet isNull($field, $value)
+ * @method \Mr\Api\Query\QuerySet iExact($field, $value)
+ * @method \Mr\Api\Query\QuerySet iStartsWith($field, $value)
+ * @method \Mr\Api\Query\QuerySet iEndsWith($field, $value)
+ * @method \Mr\Api\Query\QuerySet gt($field, $value)
+ * @method \Mr\Api\Query\QuerySet gte($field, $value)
+ * @method \Mr\Api\Query\QuerySet lt($field, $value)
+ * @method \Mr\Api\Query\QuerySet lte($field, $value)
+ * @method \Mr\Api\Query\QuerySet regex($field, $value)
+ * @method \Mr\Api\Query\QuerySet range($field, $value)
+ * @method \Mr\Api\Query\QuerySet year($field, $value)
+ * @method \Mr\Api\Query\QuerySet month($field, $value)
+ * @method \Mr\Api\Query\QuerySet day($field, $value)
+ * @method \Mr\Api\Query\QuerySet hour($field, $value)
+ * @method \Mr\Api\Query\QuerySet minute($field, $value)
+ * @method \Mr\Api\Query\QuerySet second($field, $value)
+ * @method \Mr\Api\Query\QuerySet weekDay($field, $value)
  *
  */
 class QuerySet
@@ -94,7 +94,9 @@ class QuerySet
     }
 
     /**
-     * @param $field
+     * Adds field of list of fields to the query
+     *
+     * @param string | array $field
      * @return $this
      * @throws \Exception
      */
@@ -160,7 +162,7 @@ class QuerySet
      * @return array
      * @throws \Exception
      */
-    protected function parseFilters($field, $filter = '', $value = '')
+    protected function parseFilter($field, $filter = '', $value = '')
     {
         $filters = array();
 
@@ -172,9 +174,9 @@ class QuerySet
                     } else if (is_array($value)) {
                         // Recursion to step inside the whole filter tree
                         if (count($value) == 1) {
-                            $filters = array_merge($filters, $this->parseFilters($value));
+                            $filters = array_merge($filters, $this->parseFilter($value));
                         } else if (count($value) > 1) {
-                            $filters[] = $this->parseFilters($value);
+                            $filters[] = $this->parseFilter($value);
                         } else {
                             throw new \Exception('Empty filter or set of filters');
                         }
@@ -184,9 +186,9 @@ class QuerySet
                         $filters[] = $this->createPredicateOperator($filter);
                         // Recursion to step inside the whole filter tree
                         if (count($value) == 1) {
-                            $filters = array_merge($filters, $this->parseFilters($value));
+                            $filters = array_merge($filters, $this->parseFilter($value));
                         } else if (count($value) > 1) {
-                            $filters[] = $this->parseFilters($value);
+                            $filters[] = $this->parseFilter($value);
                         } else {
                             throw new \Exception('Empty filter or set of filters');
                         }
@@ -213,7 +215,9 @@ class QuerySet
     }
 
     /**
-     * @param $field
+     * Adds filter or list of filters to the query
+     *
+     * @param string | array $field
      * @param string $filter
      * @param string $value
      * @return $this
@@ -224,10 +228,10 @@ class QuerySet
         if (empty($field)) {
             throw new \Exception('Invalid select field');
         }
-        $newFilters =  $this->parseFilters($field, $filter, $value);
+        $newFilters =  $this->parseFilter($field, $filter, $value);
 
         if (empty($this->_filters)) {
-            $this->_filters = $this->parseFilters($field, $filter, $value);
+            $this->_filters = $this->parseFilter($field, $filter, $value);
         } else {
             foreach ($newFilters as $filter) {
                 $this->_filters[] = $filter;
@@ -268,22 +272,60 @@ class QuerySet
     }
 
     /**
-     * @param $field
+     * Adds a negated filter or list of filters to the query
+     *
+     * @param array | string $field
      * @param $filter
      * @param $value
      * @return $this
      * @throws \Exception
      */
-    public function exclude($field, $filter, $value)
+    public function exclude($field, $filter = '', $value = '')
     {
-        if (!empty($field)) {
+        if (empty($field)) {
             throw new \Exception('Invalid select field');
         }
 
         $this->_filters[] = self::OPERATOR_NOT;
-        $this->_filters = array($this->_filters, $this->parseFilters($field, $filter, $value));
+        $this->_filters[] = $this->parseFilter($field, $filter, $value);
 
         return $this;
+    }
+
+    /**
+     * Adds a filter or list of filters to the query by And operator
+     *
+     * @param $field
+     * @param string $filter
+     * @param string $value
+     * @throws \Exception
+     */
+    public function andFilter($field, $filter = '', $value = '')
+    {
+        if (empty($field)) {
+            throw new \Exception('Invalid select field');
+        }
+
+        $this->_filters[] = self::OPERATOR_AND;
+        $this->_filters[] = $this->parseFilter($field, $filter, $value);
+    }
+
+    /**
+     * Adds a filter or list of filters to the query by And operator
+     *
+     * @param $field
+     * @param string $filter
+     * @param string $value
+     * @throws \Exception
+     */
+    public function orFilter($field, $filter = '', $value = '')
+    {
+        if (empty($field)) {
+            throw new \Exception('Invalid select field');
+        }
+
+        $this->_filters[] = self::OPERATOR_OR;
+        $this->_filters[] = $this->parseFilter($field, $filter, $value);
     }
 
     /**

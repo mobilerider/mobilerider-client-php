@@ -93,7 +93,8 @@ class Service
     * Returns a all objects from given model.
     *
     * @param string $model 
-    * @param array $filters
+    * @param array | \Mr\Api\Query\QuerySet $filters
+    * @param \Mr\Api\Query\QuerySet $querySet
     * @return ApiObjectCollection
     */
     public function getAll($model, $filters = array(), $querySet = null)
@@ -133,7 +134,8 @@ class Service
     /**
     * Returns all media objects
     *
-    * @param array $filters
+    * @param array | \Mr\Api\Query\QuerySet $filters
+    * @param \Mr\Api\Query\QuerySet $querySet
     * @return ApiObjectCollection
     */
     public function getMedias($filters = array(), $querySet = null)
@@ -144,7 +146,8 @@ class Service
     /**
     * Returns all channel objects
     *
-    * @param array $filters
+    * @param array | \Mr\Api\Query\QuerySet $filters
+    * @param \Mr\Api\Query\QuerySet $querySet
     * @return ApiObjectCollection
     */
     public function getChannels($filters = array(), $querySet = null)

@@ -63,7 +63,10 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
 
         $q->filter($filters);
 
-        $this->assertEquals(array('filters' => array($filter)), $q->toArray());
+        $this->assertEquals(array('filters' => array(
+            array('id__gt' => 5),
+            array('id__lt'=> 1)
+        )), $q->toArray());
     }
 
     public function testOneFilterPassed()
@@ -168,5 +171,47 @@ class QuerySetTest extends \PHPUnit_Framework_TestCase
     {
         $q = new QuerySet();
         $q->filter(array('name__not_valid_filter' => 'test'));
+    }
+
+    public function testAndFilter()
+    {
+        $q = new QuerySet();
+        $q->contains('title', 'test')
+            ->andFilter(array(
+                array('title__contains' => '123'),
+                'or',
+                array('title__contains' => '123')
+            ));
+
+        $this->assertEquals(array("filters" => array(
+            array("title__contains" => "test"),
+            "and",
+            array(
+                array("title__contains" => "123"),
+                "or",
+                array("title__contains" => "123")
+            )
+        )), $q->toArray());
+    }
+
+    public function testOrFilter()
+    {
+        $q = new QuerySet();
+        $q->contains('title', 'test')
+            ->orFilter(array(
+                array('title__contains' => '123'),
+                'or',
+                array('title__contains' => '123')
+            ));
+
+        $this->assertEquals(array("filters" => array(
+            array("title__contains" => "test"),
+            "or",
+            array(
+                array("title__contains" => "123"),
+                "or",
+                array("title__contains" => "123")
+            )
+        )), $q->toArray());
     }
 }
