@@ -4,6 +4,7 @@ namespace Mr\Api\Repository;
 
 // Model
 use Mr\Api\Model\ApiObject;
+use Mr\Api\Query\QuerySet;
 
 // Collection
 use Mr\Api\Collection\ApiObjectCollection;
@@ -21,8 +22,9 @@ use Mr\Exception\MissingResponseAttributesException;
 use Mr\Exception\MultipleServerErrorsException;
 use Mr\Exception\InvalidFiltersException;
 use Mr\Exception\InvalidDataOperationException;
+use Mr\Exception\InvalidTypeException;
 
-/** 
+/**
  * ApiRepository Class file
  *
  * PHP Version 5.3
@@ -55,10 +57,11 @@ abstract class ApiRepository
     const STATUS_DENIED_ACCESS = 'Access denied';
 
     const MSG_WITH_ERRORS = "Some errors ocurred during this action.";
+    const PARAM_QUERY_SET = '__queryset__';
 
     /**
-    * var ClientInterface
-    */
+     * var ClientInterface
+     */
     protected $_client;
     protected $_metadataDefaults = array(
         'total' => 0,
@@ -78,7 +81,8 @@ abstract class ApiRepository
         'hd' => 0,
         'turbo' => 0,
         'duration' => 0,
-        'pcount' => 0
+        'pcount' => 0,
+        '__queryset__' => ''
     );
     protected $_allowedSortings = array(
         'type',
@@ -88,21 +92,21 @@ abstract class ApiRepository
     );
 
     /**
-    * Constructor
-    *
-    * @param ClientInterface $client Client used to retrieve data
-    * @return void
-    */
+     * Constructor
+     *
+     * @param ClientInterface $client Client used to retrieve data
+     * @return void
+     */
     public function __construct(ClientInterface $client)
     {
         $this->_client = $client;
     }
 
     /**
-    * Returns current model name, eg: Media
-    *
-    * @return string
-    */
+     * Returns current model name, eg: Media
+     *
+     * @return string
+     */
     public function getModel()
     {
         preg_match("/([^\\\]+$)/", get_called_class(), $matches);
@@ -110,25 +114,28 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns current client object
-    *
-    * @return Mr\Api\AbstractClient
-    */
+     * Returns current client object
+     *
+     * @return Mr\Api\AbstractClient
+     */
     public function getClient()
     {
         return $this->_client;
     }
 
     /**
-    * Returns TRUE if given response is valid or throw an exception otherwise
-    *
-    * @throws DeniedEntityAccessException
-    * @throws ServerErrorException
-    * @throws InvalidResponseException
-    *
-    * @param $response mixed
-    * @return boolean
-    */
+     * Returns TRUE if given response is valid or throw an exception otherwise
+     *
+     *
+     * @param $response mixed
+     * @param $method
+     * @throws \Mr\Exception\MissingResponseAttributesException
+     * @throws \Mr\Exception\ServerErrorException
+     * @throws \Mr\Exception\MultipleServerErrorsException
+     * @throws \Mr\Exception\DeniedEntityAccessException
+     * @throws \Mr\Exception\InvalidResponseException
+     * @return boolean
+     */
     protected function validateResponse($response, $method)
     {
         if (empty($response)) {
@@ -149,7 +156,7 @@ abstract class ApiRepository
 
         if (!$success && self::STATUS_DENIED_ACCESS == $response->status) {
             throw new DeniedEntityAccessException();
-        } 
+        }
 
         if (!$success) {
             if (is_object($response) && $response->status) {
@@ -177,37 +184,52 @@ abstract class ApiRepository
     }
 
     /**
-    * Checks if the set of filters given are allowed by the server methods
-    *
-    * @throws InvalidFiltersException
-    * @param array $filters
-    * @return array $filters
-    */
-    protected function validateFilters($filters)
+     * Checks if the set of filters given are allowed by the server methods
+     *
+     *
+     * @param array | \Mr\Api\Query\QuerySet $filters
+     * @param \Mr\Api\Query\QuerySet $querySet
+     * @throws \Mr\Exception\InvalidTypeException
+     * @throws \Mr\Exception\InvalidFiltersException
+     * @return array $filters
+     */
+    protected function validateFilters($filters, QuerySet $querySet = null)
     {
-        $filters = !empty($filters) ? $filters : array();
-        $filters = is_array($filters) ? $filters : array($filters);
-        $filtersToCheck = array_merge($this->_filterDefaults, $filters);
-        
-        $diff = array_diff_key($filtersToCheck, $this->_filterDefaults);
+        if (is_array($filters)) {
+            $filters = !empty($filters) ? $filters : array();
+            $filters = is_array($filters) ? $filters : array($filters);
+            $filtersToCheck = array_merge($this->_filterDefaults, $filters);
 
-        if (!empty($diff)) {
-            throw new InvalidFiltersException(array_keys($diff), array_keys($this->_filterDefaults));
+            $diff = array_diff_key($filtersToCheck, $this->_filterDefaults);
+
+            if (!empty($diff)) {
+                throw new InvalidFiltersException(array_keys($diff), array_keys($this->_filterDefaults));
+            }
+
+            if (isset($filters['sort'])) {
+                $sort = $filters['sort'];
+                if (!in_array($sort, $this->_allowedSortings)) {
+                    throw new InvalidFiltersException(array($sort), $this->_allowedSortings);
+                }
+            }
+
+            if (isset($filters['order'])) {
+                $order = $filters['order'];
+                $allowed = array('asc', 'desc');
+                if (!in_array($order, $allowed)) {
+                    throw new InvalidFiltersException(array($order), $allowed);
+                }
+            }
+        } else if ($filters instanceof QuerySet) {
+            $filters = array(
+                self::PARAM_QUERY_SET => $filters->toJSON()
+            );
+        } else {
+            throw new InvalidTypeException('array', $filters);
         }
 
-        if (isset($filters['sort'])) {
-            $sort = $filters['sort'];
-            if (!in_array($sort, $this->_allowedSortings)) {
-                throw new InvalidFiltersException(array($sort), $this->_allowedSortings);
-            }
-        }
-
-        if (isset($filters['order'])) {
-            $order = $filters['order'];
-            $allowed = array('asc', 'desc');
-            if (!in_array($order, $allowed)) {
-                throw new InvalidFiltersException(array($order), $allowed);
-            }
+        if (!empty($querySet)) {
+            $filters[self::PARAM_QUERY_SET] = $querySet->toJSON();
         }
 
         //@TODO: check the type filters
@@ -216,12 +238,12 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns a new model object. 
-    * It does not execute any persistent action
-    *
-    * @param $data object | array
-    * @return Mr\Api\Model\ApiObject
-    */
+     * Returns a new model object.
+     * It does not execute any persistent action
+     *
+     * @param $data object | array
+     * @return Mr\Api\Model\ApiObject
+     */
     public function create($data = null)
     {
         $modelClass = self::MODEL_NAMESPACE . $this->getModel();
@@ -229,20 +251,24 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns an object by its given id. 
-    *
-    * @param $id mixed 
-    * @return Mr\Api\Model\ApiObject
-    */
-    public function get($id)
+     * Returns an object by its given id.
+     *
+     * @param $id mixed
+     * @param \Mr\Api\Query\QuerySet $querySet
+     * @throws \Mr\Exception\MrException
+     * @return \Mr\Api\Model\ApiObject
+     */
+    public function get($id, QuerySet $querySet = null)
     {
         if (!$id || !is_numeric($id)) {
             throw new MrException("Invalid Id");
         }
 
         $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $id);
-        
-        $response = $this->_client->get($path);
+
+        $filters = !empty($querySet) ? $this->validateFilters($querySet) : array();
+
+        $response = $this->_client->get($path, $filters);
 
         if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->object)) {
             return $this->create($response->object);
@@ -252,32 +278,40 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns a objects from this model according to given filters with lazy load.
-    *
-    * @param array | null $filters Filters for the server request, only page supported for now
-    * @param &array | null $metadata Variable to store objects metadata in
-    * @return ApiObjectCollection
-    */
-    public function getAll($filters = array(), &$metadata = null)
+     * Returns a objects from this model according to given filters with lazy load.
+     *
+     * @param array | null | \Mr\Api\Query\QuerySet $filters Filters for the server request, only page supported for now
+     * @param &array | null $metadata Variable to store objects metadata in
+     * @param \Mr\Api\Query\QuerySet | null $querySet
+     * @return ApiObjectCollection
+     */
+    public function getAll($filters = array(), QuerySet $querySet = null)
     {
-        $page = isset($filters['page']) ? $filters['page'] : $this->_metadataDefaults['page'];
+        if (is_array($filters)) {
+            $page = isset($filters['page']) ? $filters['page'] : $this->_metadataDefaults['page'];
+        } else {
+            $page =  $this->_metadataDefaults['page'];
+        }
+
+        $filters = $this->validateFilters($filters, $querySet);
 
         return new ApiObjectCollection($this, $page, $filters);
     }
 
     /**
-    * Returns a objects from this model according with given filters (no lazy load).
-    * Objects are retrieved and returned at once.
-    *
-    * @param array | null $filters Filters for the server request, only page supported for now
-    * @param &array | null $metadata Variable to store objects metadata in
-    * @return array
-    */
-    public function getAllRecords($filters = array(), &$metadata = null)
+     * Returns a objects from this model according with given filters (no lazy load).
+     * Objects are retrieved and returned at once.
+     *
+     * @param array | null $filters Filters for the server request, only page supported for now
+     * @param &array | null $metadata Variable to store objects metadata in
+     * @param \Mr\Api\Query\QuerySet $querySet
+     * @return array
+     */
+    public function getAllRecords($filters = array(), &$metadata = null, QuerySet $querySet = null)
     {
         $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-            
-        $response = $this->_client->get($path, $this->validateFilters($filters));
+
+        $response = $this->_client->get($path, $this->validateFilters($filters, $querySet));
         $results = array();
 
         if ($metadata !== null && is_array($metadata)) {
@@ -294,11 +328,11 @@ abstract class ApiRepository
     }
 
     /**
-    * Deletes given model object.
-    *
-    * @param $object Mr\Api\Model\ApiObject
-    * @return void
-    */
+     * Deletes given model object.
+     *
+     * @param $object \Mr\Api\Model\ApiObject
+     * @return void
+     */
     public function delete(ApiObject $object)
     {
         $object->beforeDelete();
@@ -335,7 +369,7 @@ abstract class ApiRepository
             } else {
                 $modified[] = $object;
             }
-        }    
+        }
 
         return array($new, $modified);
     }
@@ -385,13 +419,13 @@ abstract class ApiRepository
     }
 
     /**
-    * Saves given model object or list of objects.
-    *
-    * @throws InvalidDataOperationException
-    *
-    * @param ApiObject | ApiObjectCollection | array $object
-    * @return void
-    */
+     * Saves given model object or list of objects.
+     *
+     * @throws InvalidDataOperationException
+     *
+     * @param ApiObject | ApiObjectCollection | array $object
+     * @return void
+     */
     public function save($object)
     {
         list($new, $modified) = $this->preSave($object);
@@ -416,6 +450,6 @@ abstract class ApiRepository
 
             $this->postSave($response, $modified, AbstractClient::METHOD_PUT);
         }
-        
+
     }
 }

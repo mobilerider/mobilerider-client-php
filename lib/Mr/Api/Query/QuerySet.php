@@ -4,6 +4,21 @@ namespace Mr\Api\Query;
 
 use Mr\Exception\InvalidFiltersException;
 
+/**
+ * @param $fields
+ * @return QuerySet
+ */
+function F($fields)
+{
+    return new QuerySet(array(), array(), $fields);
+}
+
+/**
+ * @param array $filters
+ * @param array $exclude
+ * @param array $fields
+ * @return QuerySet
+ */
 function Q(array $filters, array $exclude = array(), array $fields = array())
 {
     return new QuerySet($filters, $exclude, $fields);
@@ -48,15 +63,25 @@ class QuerySet
     protected $_fields = array();
     protected $_filters = array();
 
+    /**
+     * @var array
+     */
     protected $_allowedOperators = array(
         self::OPERATOR_AND, self::OPERATOR_OR, self::OPERATOR_NOT
     );
 
+    /**
+     * @var array
+     */
     protected $_allowedFilters = array(
         'exact', 'contains', 'in', 'startswith', 'endswith', 'isnull', 'iexact', 'istartswith', 'iendswith',
         'gt', 'gte', 'lt', 'lte', 'regex', 'range', 'year', 'month', 'day', 'hour', 'minute', 'second', 'weekday'
     );
 
+    /**
+     * @param array $filters
+     * @param array $fields
+     */
     public function __construct(array $filters = array(), array $fields = array())
     {
         if (!empty($filters)) {
@@ -68,6 +93,11 @@ class QuerySet
         }
     }
 
+    /**
+     * @param $field
+     * @return $this
+     * @throws \Exception
+     */
     public function select($field)
     {
         $fields = array();
@@ -95,6 +125,11 @@ class QuerySet
         return $this;
     }
 
+    /**
+     * @param $field
+     * @return bool
+     * @throws \Exception
+     */
     protected function validateField($field)
     {
         if (!is_string($field)) {
@@ -103,7 +138,12 @@ class QuerySet
 
         return true;
     }
-    
+
+    /**
+     * @param $filter
+     * @return bool
+     * @throws \Mr\Exception\InvalidFiltersException
+     */
     protected function validateFilter($filter)
     {
         if (!in_array($filter, $this->_allowedFilters)) {
@@ -113,6 +153,13 @@ class QuerySet
         return true;
     }
 
+    /**
+     * @param $field
+     * @param string $filter
+     * @param string $value
+     * @return array
+     * @throws \Exception
+     */
     protected function parseFilters($field, $filter = '', $value = '')
     {
         $filters = array();
@@ -165,6 +212,13 @@ class QuerySet
         return $filters;
     }
 
+    /**
+     * @param $field
+     * @param string $filter
+     * @param string $value
+     * @return $this
+     * @throws \Exception
+     */
     public function filter($field, $filter = '', $value = '')
     {
         if (empty($field)) {
@@ -183,6 +237,11 @@ class QuerySet
         return $this;
     }
 
+    /**
+     * @param $op
+     * @return mixed
+     * @throws \Mr\Exception\InvalidFiltersException
+     */
     protected function createPredicateOperator($op)
     {
         if (!is_string($op) || !in_array($op, $this->_allowedOperators)) {
@@ -192,6 +251,12 @@ class QuerySet
         return $op;
     }
 
+    /**
+     * @param $field
+     * @param $filter
+     * @param $value
+     * @return array
+     */
     protected function createFilter($field, $filter, $value)
     {
         $filter = strtolower($filter);
@@ -202,6 +267,13 @@ class QuerySet
         return array($field . '__' . $filter => $value);
     }
 
+    /**
+     * @param $field
+     * @param $filter
+     * @param $value
+     * @return $this
+     * @throws \Exception
+     */
     public function exclude($field, $filter, $value)
     {
         if (!empty($field)) {
@@ -214,6 +286,12 @@ class QuerySet
         return $this;
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return $this
+     * @throws \Exception
+     */
     public function __call($name, $arguments)
     {
         if (empty($arguments)) {
@@ -233,6 +311,9 @@ class QuerySet
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function toArray()
     {
         $a = array();
@@ -248,6 +329,9 @@ class QuerySet
         return $a;
     }
 
+    /**
+     * @return string
+     */
     public function toJSON()
     {
         return json_encode($this->toArray());

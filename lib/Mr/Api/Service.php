@@ -82,11 +82,11 @@ class Service
     * @param $id mixed 
     * @return Mr\Api\Model\ApiObject
     */
-    public function get($model, $id)
+    public function get($model, $id, $querySet = null)
     {
         $repo = $this->getRepository($model);
 
-        return $repo->get($id);
+        return $repo->get($id, $querySet);
     }
 
     /**
@@ -96,11 +96,11 @@ class Service
     * @param array $filters
     * @return ApiObjectCollection
     */
-    public function getAll($model, $filters = array())
+    public function getAll($model, $filters = array(), $querySet = null)
     {
         $repo = $this->getRepository($model);
 
-        return $repo->getAll($filters);
+        return $repo->getAll($filters, $querySet);
     }
 
     /**
@@ -136,9 +136,9 @@ class Service
     * @param array $filters
     * @return ApiObjectCollection
     */
-    public function getMedias($filters = array())
+    public function getMedias($filters = array(), $querySet = null)
     {
-        return $this->getAll('Media', $filters);
+        return $this->getAll('Media', $filters, $querySet);
     }
 
     /**
@@ -147,9 +147,9 @@ class Service
     * @param array $filters
     * @return ApiObjectCollection
     */
-    public function getChannels($filters = array())
+    public function getChannels($filters = array(), $querySet = null)
     {
-        return $this->getAll('Channel', $filters);
+        return $this->getAll('Channel', $filters, $querySet);
     }
 
     /**
