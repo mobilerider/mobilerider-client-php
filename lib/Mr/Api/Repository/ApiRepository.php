@@ -95,7 +95,7 @@ abstract class ApiRepository
      * Constructor
      *
      * @param ClientInterface $client Client used to retrieve data
-     * @return void
+     * @return \Mr\Api\Repository\ApiRepository
      */
     public function __construct(ClientInterface $client)
     {
@@ -148,7 +148,7 @@ abstract class ApiRepository
             throw new MissingResponseAttributesException(array('status'));
         }
 
-        $success = is_object($response) && self::STATUS_OK == $response->status;
+        $success = is_object($response) && $response->success;
 
         if (!$success && self::MSG_WITH_ERRORS == $response->status) {
             throw new MultipleServerErrorsException($response, $method);
