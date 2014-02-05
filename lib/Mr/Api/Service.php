@@ -157,12 +157,27 @@ class Service
     * It does not execute any persistent action.
     *
     * @param $data object | array
-    * @return Mr\Api\Model\Media
+    * @return \Mr\Api\Model\Media
     */
     public function createLiveMedia($data = null)
     {
         $media = $this->create('Media', $data);
         $media->type = Media::TYPE_LIVE;
+
+        return $media;
+    }
+
+    /**
+     * Returns a new vod media empty or with given initial data.
+     * It does not execute any persistent action.
+     *
+     * @param $data object | array
+     * @return \Mr\Api\Model\Media
+     */
+    public function createVodMedia($data = null)
+    {
+        $media = $this->create('Media', $data);
+        $media->type = Media::TYPE_VOD;
 
         return $media;
     }

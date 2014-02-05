@@ -30,6 +30,7 @@ use Mr\Api\Util\Validator;
 class Media extends ApiObject
 {
     const TYPE_LIVE = 'Live Video';
+    const TYPE_VOD = 'Videos';
 
     public function getStringField()
     {
