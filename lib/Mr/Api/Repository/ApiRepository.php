@@ -54,7 +54,7 @@ abstract class ApiRepository
     const STATUS_NOT_FOUND_PATTERN = 'Unknown %s';
     const STATUS_DENIED_ACCESS = 'Access denied';
 
-    const MSG_WITH_ERRORS = "Some errors ocurred during this action.";
+    const MSG_WITH_ERRORS = "Some errors occurred during this action.";
 
     /**
     * var ClientInterface
