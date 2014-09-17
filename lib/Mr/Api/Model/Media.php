@@ -1,10 +1,10 @@
-<?php 
+<?php
 
 namespace Mr\Api\Model;
 
 use Mr\Api\Util\Validator;
 
-/** 
+/**
  * Media Class file
  *
  * PHP Version 5.3
@@ -29,6 +29,7 @@ use Mr\Api\Util\Validator;
  */
 class Media extends ApiObject
 {
+    const TYPE_VOD = 'Videos';
     const TYPE_LIVE = 'Live Video';
 
     public function getStringField()
