@@ -22,7 +22,7 @@ use Mr\Exception\MultipleServerErrorsException;
 use Mr\Exception\InvalidFiltersException;
 use Mr\Exception\InvalidDataOperationException;
 
-/** 
+/**
  * ApiRepository Class file
  *
  * PHP Version 5.3
@@ -149,7 +149,7 @@ abstract class ApiRepository
 
         if (!$success && self::STATUS_DENIED_ACCESS == $response->status) {
             throw new DeniedEntityAccessException();
-        } 
+        }
 
         if (!$success) {
             if (is_object($response) && $response->status) {
@@ -185,11 +185,12 @@ abstract class ApiRepository
     */
     protected function validateFilters($filters)
     {
-        $filters = !empty($filters) ? $filters : array();
-        $filters = is_array($filters) ? $filters : array($filters);
-        $filtersToCheck = array_merge($this->_filterDefaults, $filters);
-        
-        $diff = array_diff_key($filtersToCheck, $this->_filterDefaults);
+        // TODO: enables validation to allow current complex filtering
+        //$filters = !empty($filters) ? $filters : array();
+        //$filters = is_array($filters) ? $filters : array($filters);
+        //$filtersToCheck = array_merge($this->_filterDefaults, $filters);
+
+        //$diff = array_diff_key($filtersToCheck, $this->_filterDefaults);
 
         if (!empty($diff)) {
             throw new InvalidFiltersException(array_keys($diff), array_keys($this->_filterDefaults));
@@ -216,7 +217,7 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns a new model object. 
+    * Returns a new model object.
     * It does not execute any persistent action
     *
     * @param $data object | array
@@ -229,9 +230,9 @@ abstract class ApiRepository
     }
 
     /**
-    * Returns an object by its given id. 
+    * Returns an object by its given id.
     *
-    * @param $id mixed 
+    * @param $id mixed
     * @return Mr\Api\Model\ApiObject
     */
     public function get($id)
@@ -241,7 +242,7 @@ abstract class ApiRepository
         }
 
         $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $id);
-        
+
         $response = $this->_client->get($path);
 
         if ($this->validateResponse($response, AbstractClient::METHOD_GET) && !empty($response->object)) {
@@ -276,7 +277,7 @@ abstract class ApiRepository
     public function getAllRecords($filters = array(), &$metadata = null)
     {
         $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
-            
+
         $response = $this->_client->get($path, $this->validateFilters($filters));
         $results = array();
 
@@ -335,7 +336,7 @@ abstract class ApiRepository
             } else {
                 $modified[] = $object;
             }
-        }    
+        }
 
         return array($new, $modified);
     }
@@ -416,6 +417,6 @@ abstract class ApiRepository
 
             $this->postSave($response, $modified, AbstractClient::METHOD_PUT);
         }
-        
+
     }
 }
