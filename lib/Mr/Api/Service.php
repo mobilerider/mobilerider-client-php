@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Mr\Api;
 
@@ -10,7 +10,7 @@ use Mr\Api\Model\Media;
 // Exceptions
 use Mr\Api\Exception\InvalidDataOperationException;
 
-/** 
+/**
  * Service Class file
  *
  * PHP Version 5.3
@@ -61,7 +61,7 @@ class Service
     }
 
     /**
-    * Returns a new object from given model and initial data. 
+    * Returns a new object from given model and initial data.
     * It does not execute any persistent action.
     *
     * @param $model string
@@ -76,10 +76,10 @@ class Service
     }
 
     /**
-    * Returns an object by its given model and id. 
+    * Returns an object by its given model and id.
     *
-    * @param $model string 
-    * @param $id mixed 
+    * @param $model string
+    * @param $id mixed
     * @return Mr\Api\Model\ApiObject
     */
     public function get($model, $id)
@@ -92,7 +92,7 @@ class Service
     /**
     * Returns a all objects from given model.
     *
-    * @param string $model 
+    * @param string $model
     * @param array $filters
     * @return ApiObjectCollection
     */
@@ -116,7 +116,7 @@ class Service
         } else {
             $firstObject = $object;
         }
-        
+
         if ($firstObject instanceof ApiObject) {
             $model = $firstObject->getModel();
         } else {
@@ -129,6 +129,16 @@ class Service
     }
 
     // Helpers
+
+    public function getMedia($id)
+    {
+        return $this->get('Media', $id);
+    }
+
+    public function getChannel($id)
+    {
+        return $this->get('Channel', $id);
+    }
 
     /**
     * Returns all media objects
@@ -153,7 +163,36 @@ class Service
     }
 
     /**
-    * Returns a new live media empty or with given initial data. 
+    * Returns a new channel empty or with given initial data.
+    * It does not execute any persistent action.
+    *
+    * @param $data object | array
+    * @return Mr\Api\Model\Channel
+    */
+    public function createChannel($data = null)
+    {
+        $channel = $this->create('Channel', $data);
+
+        return $channel;
+    }
+
+    /**
+    * Returns a new VOD media empty or with given initial data.
+    * It does not execute any persistent action.
+    *
+    * @param $data object | array
+    * @return Mr\Api\Model\Media
+    */
+    public function createVODMedia($data = null)
+    {
+        $media = $this->create('Media', $data);
+        $media->type = Media::TYPE_VOD;
+
+        return $media;
+    }
+
+    /**
+    * Returns a new live media empty or with given initial data.
     * It does not execute any persistent action.
     *
     * @param $data object | array
