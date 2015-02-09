@@ -5,7 +5,7 @@ namespace Mr\Api\Http;
 use Mr\Api\AbstractClient;
 use Mr\Api\Util\CommonUtils;
 
-/** 
+/**
  * Request Class file
  *
  * PHP Version 5.3
@@ -72,7 +72,7 @@ class Request extends \HTTP_Request2
 
     /**
     * Sets a new parameter to the request.
-    * It can be a single parameter key-pair of name and value 
+    * It can be a single parameter key-pair of name and value
     * or an array of parameters.
     *
     * @param string | array $name
@@ -89,26 +89,30 @@ class Request extends \HTTP_Request2
 
     /**
     * {@inheritdoc }
-    */ 
+    */
     public function send()
     {
         if ($this->method == AbstractClient::METHOD_GET) {
             $this->getUrl()->setQueryVariables($this->_parameters);
         } else if (in_array($this->method, array(AbstractClient::METHOD_POST, AbstractClient::METHOD_PUT))) {
-            $params = array();
 
-            foreach ($this->_parameters as $name => $value) {
-                switch ($this->_dataType) {
-                    case AbstractClient::DATA_TYPE_JSON:
-                        $params[$name] = CommonUtils::encodeJson($value);
-                        break;
-                    default:
-                        $params[$name] = $value;
-                }
+            switch ($this->_dataType) {
+                case AbstractClient::DATA_TYPE_JSON:
+                    $this->setHeader('Content-Type', 'application/json');
+                    $params = CommonUtils::encodeJson($this->_parameters);
+                    break;
+                default:
+                    $params[$name] = $this->_parameters;
             }
 
-            if ($this->method == AbstractClient::METHOD_POST) {
-                $this->addPostParameter($params);
+            if ($this->method == AbstractClient::METHOD_POST ||
+                $this->method == AbstractClient::METHOD_PUT ||
+                $this->method == AbstractClient::METHOD_PATCH) {
+                if ($this->_dataType == AbstractClient::DATA_TYPE_JSON) {
+                    $this->setBody($params);
+                } else {
+                    $this->addPostParameter($params);
+                }
             } else {
                 $this->setBody(new \HTTP_Request2_MultipartBody($params, array()));
             }
