@@ -355,7 +355,7 @@ abstract class ApiRepository
             }
         }
 
-        return array('JSON' => $data);
+        return $data;
     }
 
     protected function postSave($response, $object, $method)
