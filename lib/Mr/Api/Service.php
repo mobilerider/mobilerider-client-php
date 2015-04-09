@@ -37,16 +37,27 @@ class Service
 {
     const API_HOST = 'api.devmobilerider.com';
     const REPO_NAMESPACE = 'Mr\\Api\\Repository\\';
+    const APP_VENDOR_HEADER = 'X-Vendor-App-Id';
+
+    protected $includeSubvendors = false;
 
     /**
     * var ClientInterface
     */
     protected $_client;
 
-    public function __construct($appId, $secret, $host = '')
+    public function __construct($appId, $secret, $host = '', array $options = array())
     {
+        if (array_key_exists('include_subvendors', $options)) {
+            $this->includeSubvendors = (bool) $options['include_subvendors'];
+        }
+
         $host = empty($host) ? self::API_HOST : $host;
         $this->_client = new Client($host, $appId, $secret);
+
+        if (!$this->includeSubvendors) {
+            $this->_client->setGlobalHeader(self::APP_VENDOR_HEADER, $appId);
+        }
     }
 
     public function getClient()

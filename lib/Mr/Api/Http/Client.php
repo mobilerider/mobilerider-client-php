@@ -58,6 +58,8 @@ class Client extends AbstractClient implements ClientInterface
     * var Mr\Api\ClientAdapterInterface
     */
     protected $_adapter;
+
+    protected $_headers = array();
     /**
     * var array
     */
@@ -86,6 +88,15 @@ class Client extends AbstractClient implements ClientInterface
     public function setGlobalConfig($name, $value)
     {
         $this->_config[$name] = $value;
+    }
+
+    public function setGlobalHeader($header, $value = null)
+    {
+        if (is_array($header)) {
+            $this->_headers = array_merge($this->_headers, $header);
+        } else {
+            $this->_headers[$header] = $value;
+        }
     }
 
     protected function getUrl($path)
@@ -117,6 +128,10 @@ class Client extends AbstractClient implements ClientInterface
 
         if (!empty($this->_adapter)) {
             $this->_request->setAdapter($this->_adapter);
+        }
+
+        if ($this->_headers) {
+            $headers = array_merge($this->_headers, $headers);
         }
 
         $this->_request->setHeader($headers);
