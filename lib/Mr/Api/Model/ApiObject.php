@@ -35,6 +35,8 @@ abstract class ApiObject
 {
     const STATUS_VALID = 'valid';
 
+    private $_uid;
+
     /**
     * var array
     */
@@ -123,11 +125,33 @@ abstract class ApiObject
     }
 
     /**
-    * Returns id value
+    * Returns a unique id if remote id is set, otherwise returns null
     *
     * @return mixed
     */
     public function getId()
+    {
+        return $this->getRemoteId() ? $this->getClientId() : null;
+    }
+
+    /**
+     * Returns a unique id set for this object once loaded
+     */
+    public function getClientId()
+    {
+        if (!$this->_uid) {
+            $this->_uid = uniqid();
+        }
+
+        return $this->_uid;
+    }
+
+    /**
+    * Returns id value
+    *
+    * @return mixed
+    */
+    public function getRemoteId()
     {
         $idField = $this->getKeyField();
         return $this->{$idField};

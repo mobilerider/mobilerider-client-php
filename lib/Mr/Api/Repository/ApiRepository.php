@@ -304,7 +304,7 @@ abstract class ApiRepository
     {
         $object->beforeDelete();
 
-        $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
+        $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getRemoteId());
 
         $this->_client->delete($path);
 
@@ -407,7 +407,7 @@ abstract class ApiRepository
 
         if (!empty($modified)) {
             if (count($modified) == 1) {
-                $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getId());
+                $path = sprintf("%s/%s/%d", self::API_URL_PREFIX, strtolower($this->getModel()), $object->getRemoteId());
             } else {
                 $path = sprintf("%s/%s", self::API_URL_PREFIX, strtolower($this->getModel()));
             }
