@@ -11,6 +11,7 @@ class MediaTest extends \PHPUnit_Framework_TestCase
 {
     protected $client = null;
     protected $repo = null;
+    protected $dummyObjects = array();
 
     public function setUp() {
         $this->client = new Client(APP_HOST, APP_ID, APP_SECRET);
@@ -41,8 +42,11 @@ class MediaTest extends \PHPUnit_Framework_TestCase
             }
         }
 
+        $media = $this->repo->create($data);
+        $this->dummyObjects[] = $media;
+
         // return new Media($this->repo, $data);
-        return $this->repo->create($data);
+        return $media;
     }
 
     public function testGetModel() {
@@ -195,6 +199,16 @@ class MediaTest extends \PHPUnit_Framework_TestCase
 
         // Api ignores unknown fields so this can not throw any exception
         $media->save();
+        $mediaId = $media->getId();
+
+        $media->delete();
+
+        try {
+            $this->repo->get($mediaId);
+        } catch (\Exception $expected) {
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+        }
     }
 
     /*public function testExceptionForURLField() {
@@ -570,5 +584,26 @@ class MediaTest extends \PHPUnit_Framework_TestCase
         $data = json_decode(json_encode($data));
 
         $media->saved($data);
+    }
+
+
+
+
+    // Leave this method always for last
+    public function testDeleteAllDummyObjects()
+    {
+        foreach ($this->dummyObjects as $object) {
+            if (!$object->isNew()) {
+                $id = $object->getId();
+                $object->delete();
+                
+                try {
+                    $object = $this->repo->get($id);
+                } catch (\Exception $ex) {
+                    $this->assertInstanceOf('Mr\Exception\InvalidFieldException', $ex);
+                    $this->assertEquals('Invalid field: stream. The value ' . var_export($media->stream, true) . ' contains invalid values', $ex->getMessage());
+                } 
+            }
+        }
     }
 }

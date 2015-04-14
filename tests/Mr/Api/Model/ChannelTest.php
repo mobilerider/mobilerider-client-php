@@ -11,6 +11,7 @@ class ChannelTest extends \PHPUnit_Framework_TestCase
 {
     protected $client = null;
     protected $repo = null;
+    protected $dummyObjects = array();
 
     public function setUp() {
         $this->client = new Client(APP_HOST, APP_ID, APP_SECRET);
@@ -26,8 +27,11 @@ class ChannelTest extends \PHPUnit_Framework_TestCase
             $data['url'] = 'http://testing.com';
         }
 
+        $channel = $this->repo->create($data);
+        $this->dummyObjects[] = $channel;
+
         // return new Channel($this->repo, $data);
-        return $this->repo->create($data);
+        return $channel;
     }
 
     public function testGetModel() {
@@ -160,6 +164,16 @@ class ChannelTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($channel->isNew());
         $this->assertFalse($channel->isModified());
         $channel->save();
+
+        $channelId = $channel->getId();
+        $channel->delete();
+
+        try {
+            $this->repo->get($channelId);
+        } catch (\Exception $expected) {
+            if (!is_a($expected, 'Mr\Exception\ServerErrorException'))
+                $this->fail('Failed to raise a ServerErrorException, got an ' . get_class($expected) . ' instead.');
+        }
     }
 
     // TODO: This could change to a more meaningful/specific exception class
@@ -353,5 +367,25 @@ class ChannelTest extends \PHPUnit_Framework_TestCase
         $media = $this->getDummyChannel();
         $media->url = 'not a valid url';
         $media->save();
+    }
+
+
+
+    // Leave this method always for last
+    public function testDeleteAllDummyObjects()
+    {
+        foreach ($this->dummyObjects as $object) {
+            if (!$object->isNew()) {
+                $id = $object->getId();
+                $object->delete();
+                
+                try {
+                    $object = $this->repo->get($id);
+                } catch (\Exception $ex) {
+                    $this->assertInstanceOf('Mr\Exception\InvalidFieldException', $ex);
+                    $this->assertEquals('Invalid field: stream. The value ' . var_export($media->stream, true) . ' contains invalid values', $ex->getMessage());
+                } 
+            }
+        }
     }
 }

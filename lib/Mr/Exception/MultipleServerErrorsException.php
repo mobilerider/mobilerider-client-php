@@ -37,9 +37,9 @@ class MultipleServerErrorsException extends MrException
         $messages = array();
 
         if ($method == AbstractClient::METHOD_POST) {
-            foreach ($response->objects as $key => $value) {
+            foreach ($response->messages as $key => $value) {
                 if (!is_object($value)) { // If is not an object is because it's an error message
-                    $messages[] = sprintf(self::MSG_TEMPLATE, $value, 'index', $key);
+                    $messages[] = sprintf(self::MSG_TEMPLATE, $value->text, 'index', $value->index);
                 }
             }
         } else if ($method == AbstractClient::METHOD_PUT) {
@@ -50,11 +50,9 @@ class MultipleServerErrorsException extends MrException
                     $messages[] = sprintf(self::MSG_TEMPLATE, $value->text, 'object id', $value->id);
                 }
             }
-        } else {
-            $messages = $objects;
         }
 
-        $message = "Multiple errors ocurred during this {$method} action. \r\n";
+        $message = "Multiple errors occurred during this {$method} action. \r\n";
 
         foreach ($messages as $msg) {
             $message .= $msg . "\r\n";
